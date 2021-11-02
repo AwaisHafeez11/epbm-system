@@ -1,12 +1,11 @@
 package com.app.epbmsystem.controller.Forms;
 
-
-import com.app.epbmsystem.model.Forms.FinancialForm;
-import com.app.epbmsystem.service.FinancialService;
+import com.app.epbmsystem.model.Forms.EducationalForm;
+import com.app.epbmsystem.model.Forms.ResidentialForm;
+import com.app.epbmsystem.service.ResidentialService;
 import io.swagger.annotations.Api;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,21 +13,21 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @EnableSwagger2
 @RestController
-@RequestMapping("/financialForm")
-@Api(value="FinancialForm Operations - CRUD REST API's for the FinancialForm")
-public class FinancialController {
-    private static final Logger LOG =  LogManager.getLogger(FinancialController.class);
+@RequestMapping("/residential")
+@Api(value="residentialForm Operations - CRUD REST API's for the residentialForm")
+public class ResidentialController {
+    private static final Logger LOG =  LogManager.getLogger(ResidentialController.class);
     private static String token="awais1234";
 
-    final FinancialService financialService;
+    final ResidentialService residentialService;
 
-    public FinancialController(FinancialService financialService) {
-        this.financialService = financialService;
+    public ResidentialController(ResidentialService residentialService) {
+        this.residentialService = residentialService;
     }
 
     public boolean authorization(String token) {
         LOG.info("Authorizing the user ");
-        return FinancialController.token.equals(token);
+        return ResidentialController.token.equals(token);
     }
 
     public ResponseEntity<Object> UnAuthorizeUser() {
@@ -37,9 +36,9 @@ public class FinancialController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<Object> listOfFinancialForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfResidentialForms(@RequestHeader("Authorization") String token) {
         if (authorization(token)) {
-            return financialService.listAllFinancialFroms();
+            return residentialService.listAllResidentialFroms();
         } else {
             LOG.info("Unauthorized user trying to access the database");
             return UnAuthorizeUser();
@@ -47,10 +46,10 @@ public class FinancialController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Object> add(@RequestHeader("Authorization") String token, @RequestBody FinancialForm financialForm) {
+    public ResponseEntity<Object> add(@RequestHeader("Authorization") String token, @RequestBody ResidentialForm residentialForm) {
         try{
             if (authorization(token)) {
-                return financialService.saveFinancialForm(financialForm);
+                return residentialService.saveResidentialForm(residentialForm);
             } else {
                 LOG.info("Unauthorized user trying to access the database");
                 return UnAuthorizeUser();
@@ -62,9 +61,9 @@ public class FinancialController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getFinancialFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+    public ResponseEntity<Object> getResidentialFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         if (authorization(token)) {
-            return financialService.getFinancialForm(id); //It will return the Response
+            return residentialService.getResidentialForm(id);
         } else {
             LOG.info("UnAuthorized User was trying to access the database");
             return UnAuthorizeUser(); //If the user is not authorized
@@ -72,9 +71,9 @@ public class FinancialController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<Object> UpdateFinancialForm(@RequestHeader("Authorization") String token, @RequestBody FinancialForm financialForm) {
+    public ResponseEntity<Object> UpdateResidentialForm(@RequestHeader("Authorization") String token, @RequestBody ResidentialForm residentialForm) {
         if (authorization(token)) {
-            return financialService.updateFinancialForm(financialForm);
+            return residentialService.updateResidentialForm(residentialForm);
         } else {
             LOG.info("UnAuthorized User was trying to access the database");
             return UnAuthorizeUser() ;
@@ -82,11 +81,11 @@ public class FinancialController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Object> DeleteFinancialForm(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> DeleteResidentialForm(@PathVariable Long id, @RequestHeader("Authorization") String token) {
 
         if (authorization(token)) {
             try{
-                return financialService.deleteFinancialForm(id);
+                return residentialService.deleteResidentialForm(id);
             }catch (Exception exception){
                 LOG.info("UnAuthorized User was trying to access the database");
                 return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -98,10 +97,10 @@ public class FinancialController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Object> DeleteFinancialForm(@RequestHeader("Authorization") String token, @RequestParam("delete") Long id) {
+    public ResponseEntity<Object> DeleteResidentialForm(@RequestHeader("Authorization") String token, @RequestParam("delete") Long id) {
         if (authorization(token)) {
             try{
-                return financialService.deleteFinancialForm(id);
+                return residentialService.deleteResidentialForm(id);
             }catch (Exception exception){
                 LOG.info("Exception: "+exception.getMessage());
                 return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -111,7 +110,5 @@ public class FinancialController {
             return UnAuthorizeUser();
         }
     }
-
-
 
 }

@@ -1,6 +1,6 @@
 package com.app.epbmsystem.service;
 
-import com.app.epbmsystem.model.Entity.Category;
+
 import com.app.epbmsystem.model.Forms.FinancialForm;
 import com.app.epbmsystem.repository.FinancialRepository;
 import org.apache.logging.log4j.LogManager;
@@ -90,6 +90,4 @@ public class FinancialService {
         catch (Exception exception)
         {return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
     }
-
-
 }
