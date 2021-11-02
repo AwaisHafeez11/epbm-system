@@ -13,4 +13,5 @@ public class EducationalForm {
     @Column(nullable = false)
     private String name;
 
+
 }
