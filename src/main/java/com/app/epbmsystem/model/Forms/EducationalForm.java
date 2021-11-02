@@ -12,4 +12,5 @@ public class EducationalForm {
     private Long id;
     @Column(nullable = false)
     private String name;
+
 }
