@@ -3,9 +3,11 @@ package com.app.epbmsystem.model.Entity;
 import javax.persistence.*;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
 @Entity
-public class Category {
+public class Category implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Long id;
@@ -13,6 +15,27 @@ public class Category {
     private String name;
     private String createdDate;
     private String updatedDate;
+    private boolean active;
+
+    public Category() {
+
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public Category(Long id, String name, String createdDate, String updatedDate, boolean active) {
+        this.id = id;
+        this.name = name;
+        this.createdDate = createdDate;
+        this.updatedDate = updatedDate;
+        this.active = active;
+    }
 
     public Long getId() {
         return id;

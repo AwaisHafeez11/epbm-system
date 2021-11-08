@@ -2,11 +2,20 @@ package com.app.epbmsystem.model.Entity;
 
 // import lombok.Data;
 
+import com.app.epbmsystem.model.Forms.EducationalForm;
+import com.app.epbmsystem.model.Forms.FinancialForm;
+import com.app.epbmsystem.model.Forms.MedicalForm;
+import com.app.epbmsystem.model.Forms.ResidentialForm;
+
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 //@Data
 @Entity
-public class User {
+public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Long id;
@@ -16,16 +25,95 @@ public class User {
     private String lastname;
     @Column(unique = true)
     private String email;
+    @Column(nullable = false)
     private String password;
-    @Column(unique = true)
-    private long phoneNumber;
+    @Column(unique = true,nullable = false)
+    private String phoneNumber;
+    @Column(nullable = false)
+    private String gender;
     private boolean status;
+    @Column(nullable = false)
     private String userType;
     private String dateOfBirth;
+    @Column(nullable = false)
     private String cnic;
+    @Column(nullable = false)
     private long age;
-    private String createDate;
-    private String updateDate;
+    private Date createdDate;
+    private Date updatedDate;
+    private boolean active;
+    private String smsToken;
+    private String emailToken;
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Date getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public User(Long id, String firstName, String lastname, String email, String password, String phoneNumber, String gender, boolean status, String userType, String dateOfBirth, String cnic, long age, Date createdDate, Date updatedDate, boolean active, String smsToken, String emailToken, List<Role> roles) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastname = lastname;
+        this.email = email;
+        this.password = password;
+        this.phoneNumber = phoneNumber;
+        this.gender = gender;
+        this.status = status;
+        this.userType = userType;
+        this.dateOfBirth = dateOfBirth;
+        this.cnic = cnic;
+        this.age = age;
+        this.createdDate = createdDate;
+        this.updatedDate = updatedDate;
+        this.active = active;
+        this.smsToken = smsToken;
+        this.emailToken = emailToken;
+
+    }
+
+    public User() {
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public String getSmsToken() {
+        return smsToken;
+    }
+
+    public void setSmsToken(String smsToken) {
+        this.smsToken = smsToken;
+    }
+
+    public String getEmailToken() {
+        return emailToken;
+    }
+
+    public void setEmailToken(String emailToken) {
+        this.emailToken = emailToken;
+    }
+
+
     public Long getId() {
         return id;
     }
@@ -56,12 +144,20 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    public long getPhoneNumber() {
+
+    public String getPhoneNumber() {
         return phoneNumber;
     }
-    public void setPhoneNumber(long phoneNumber) {
+
+    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+    public void setUpdatedDate(Date updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
+
     public boolean isStatus() {
         return status;
     }
@@ -92,18 +188,48 @@ public class User {
     public void setAge(long age) {
         this.age = age;
     }
-    public String getCreateDate() {
-        return createDate;
-    }
-    public void setCreateDate(String createDate) {
-        this.createDate = createDate;
-    }
-    public String getUpdateDate() {
-        return updateDate;
-    }
-    public void setUpdateDate(String updateDate) {
-        this.updateDate = updateDate;
-    }
+
+    /**
+     * One user can have multiple residentialForms, and one residentialForm can have one user
+     */
+    @OneToMany(targetEntity = ResidentialForm.class,fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private List<ResidentialForm> residentialForms = new ArrayList<>();
+
+    /**
+     * One user can have multiple EducationalForms, and one educationalForms can have one user
+     */
+    @OneToMany(targetEntity = EducationalForm.class,fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private List<EducationalForm> educationalForms = new ArrayList<>();
+
+    /**
+     * One user can have multiple medicalForms, and one medicalForm can have one user
+     */
+    @OneToMany(targetEntity = MedicalForm.class,fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private List<MedicalForm> medicalForms = new ArrayList<>();
+
+    /**
+     * One user can have multiple FinancialForms, and one financialform can have one user
+     */
+    @OneToMany(targetEntity = FinancialForm.class,fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private List<FinancialForm> financialForms = new ArrayList<>();
+
+    /**
+     * One user can have multiple roles, and one role can have multiple users
+     */
+    @ManyToMany(targetEntity = Role.class,fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    private List<Role> roles = new ArrayList<>();
+
+    /**
+     * One user can have one category, and one category can have multiple users
+     */
+    @ManyToOne(targetEntity = Category.class,fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private Category category;
+
+
 
 
 }

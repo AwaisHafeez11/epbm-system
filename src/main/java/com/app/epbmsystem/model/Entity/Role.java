@@ -3,10 +3,11 @@ package com.app.epbmsystem.model.Entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Data
 @Entity
-public class Role {
+public class Role implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY )
@@ -15,6 +16,27 @@ public class Role {
     private String name;
     private String createdDate;
     private String updatedDate;
+    private boolean active;
+
+    public Role(Long id, String name, String createdDate, String updatedDate, boolean active) {
+        this.id = id;
+        this.name = name;
+        this.createdDate = createdDate;
+        this.updatedDate = updatedDate;
+        this.active = active;
+    }
+
+    public Role() {
+
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
     public Long getId() {
         return id;

@@ -1,12 +1,15 @@
 package com.app.epbmsystem.model.Forms;
 
+import com.app.epbmsystem.model.Entity.User;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Collection;
 
 @Data
 @Entity
-public class FinancialForm {
+public class FinancialForm implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY )
@@ -22,15 +25,75 @@ public class FinancialForm {
 
     private String fatherName;
     private Long fatherCnic;
+    private Long fatherContactNumber;
+    private Long fatherOccupation;
 
     private Integer applicantAge;
     private String currentAddress;
+
     private String permanentAddress;
     private boolean maritalStatus;
-    private String email;
 
     private String applicationType;
     private String description;
+    private String status;
+    private boolean active;
+
+    public FinancialForm(Long id, String firstName, String lastName, Long cnic, long contact, String fatherName, Long fatherCnic, Long fatherContactNumber, Long fatherOccupation, Integer applicantAge, String currentAddress, String permanentAddress, boolean maritalStatus, String applicationType, String description, String status, boolean active) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.cnic = cnic;
+        this.contact = contact;
+        this.fatherName = fatherName;
+        this.fatherCnic = fatherCnic;
+        this.fatherContactNumber = fatherContactNumber;
+        this.fatherOccupation = fatherOccupation;
+        this.applicantAge = applicantAge;
+        this.currentAddress = currentAddress;
+        this.permanentAddress = permanentAddress;
+        this.maritalStatus = maritalStatus;
+        this.applicationType = applicationType;
+        this.description = description;
+        this.status = status;
+        this.active = active;
+    }
+
+    public FinancialForm() {
+
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public Long getFatherContactNumber() {
+        return fatherContactNumber;
+    }
+
+    public void setFatherContactNumber(Long fatherContactNumber) {
+        this.fatherContactNumber = fatherContactNumber;
+    }
+
+    public Long getFatherOccupation() {
+        return fatherOccupation;
+    }
+
+    public void setFatherOccupation(Long fatherOccupation) {
+        this.fatherOccupation = fatherOccupation;
+    }
 
     public Long getId() {
         return id;
@@ -120,14 +183,6 @@ public class FinancialForm {
         maritalStatus = maritalStatus;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getApplicationType() {
         return applicationType;
     }
@@ -143,4 +198,6 @@ public class FinancialForm {
     public void setDescription(String description) {
         this.description = description;
     }
+
+
 }

@@ -1,24 +1,92 @@
 package com.app.epbmsystem.model.Forms;
 
-import lombok.Data;
+//import lombok.Data;
+
+import com.app.epbmsystem.model.Entity.Role;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-@Data
+//@Data
 @Entity
 
-public class MedicalForm {
+public class MedicalForm implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Long id;
     @Column(nullable = false)
     private Long fatherCnic;
+    @Column(nullable = false)
     private String fatherName;
-    private Long contactNumber;
+    @Column(nullable = false)
+    private Long fatherContactNumber;
+    @Column(nullable = false)
     private String diseaseDescription;
-    private String applicantType;
+    @Column(nullable = false)
+    private String applicationType;
+    @Column(nullable = false)
     private String maritalStatus;
-    private String Description;
+    @Column(nullable = false)
+    private String description;
+    private String applicationStatus;
+    private boolean active;
+
+    /**
+     * One Medical forms can have multiple diseases, and one diseases can have multiple Medical forms
+     */
+    @ManyToMany(targetEntity = Disease.class,fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    private List<Disease> diseases = new ArrayList<>();
+
+    /**
+     * One Medical forms can have multiple diseases, and one diseases can have multiple Medical forms
+     */
+
+
+
+
+    public MedicalForm(Long id, Long fatherCnic, String fatherName, Long contactNumber, String diseaseDescription, String applicationType, String maritalStatus, String description, String applicationStatus, boolean active) {
+        this.id = id;
+        this.fatherCnic = fatherCnic;
+        this.fatherName = fatherName;
+        this.fatherContactNumber = contactNumber;
+        this.diseaseDescription = diseaseDescription;
+        this.applicationType = applicationType;
+        this.maritalStatus = maritalStatus;
+        this.description = description;
+        this.applicationStatus = applicationStatus;
+        this.active = active;
+    }
+
+    public MedicalForm() {
+
+    }
+
+    public String getApplicationType() {
+        return applicationType;
+    }
+
+    public void setApplicationType(String applicationType) {
+        this.applicationType = applicationType;
+    }
+
+    public String getApplicationStatus() {
+        return applicationStatus;
+    }
+
+    public void setApplicationStatus(String applicationStatus) {
+        this.applicationStatus = applicationStatus;
+    }
+
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
     public Long getId() {
         return id;
@@ -45,11 +113,11 @@ public class MedicalForm {
     }
 
     public Long getContactNumber() {
-        return contactNumber;
+        return fatherContactNumber;
     }
 
     public void setContactNumber(Long contactNumber) {
-        this.contactNumber = contactNumber;
+        this.fatherContactNumber = contactNumber;
     }
 
     public String getDiseaseDescription() {
@@ -60,13 +128,6 @@ public class MedicalForm {
         this.diseaseDescription = diseaseDescription;
     }
 
-    public String getApplicantType() {
-        return applicantType;
-    }
-
-    public void setApplicantType(String applicantType) {
-        this.applicantType = applicantType;
-    }
 
     public String getMaritalStatus() {
         return maritalStatus;
@@ -77,10 +138,10 @@ public class MedicalForm {
     }
 
     public String getDescription() {
-        return Description;
+        return description;
     }
 
     public void setDescription(String description) {
-        Description = description;
+        description = description;
     }
 }

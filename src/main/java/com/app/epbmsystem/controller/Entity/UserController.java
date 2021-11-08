@@ -23,10 +23,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<Object> UserLogin(@RequestHeader String email , @RequestHeader String password) {
-        return userService.Authentication(email,password);
-    }
     public boolean authorization(String token) {
         LOG.info("Authorizing the user ");
         return UserController.token.equals(token);
@@ -36,13 +32,50 @@ public class UserController {
         return new ResponseEntity<>("Kindly do the authorization first", HttpStatus.UNAUTHORIZED);
     }
 
+    @GetMapping("/list/inactive")
+    public ResponseEntity<Object> listOfInActiveUsers(@RequestHeader("Authorization") String token) {
+        if (authorization(token)) {
+            LOG.info("Listing all the users that are not active");
+            return userService.listOfInActiveUsers();
+        } else {
+            return UnAuthorizeUser();
+        }
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<Object> addUser(@RequestBody User user) {
+        LOG.info("Adding the user");
+        return userService.addUser(user);
+    }
+
+    @GetMapping("/login")
+    public ResponseEntity<Object> login(@RequestHeader("Authorization") String token, @RequestParam String email, @RequestParam String password) {
+        if (authorization(token)) {
+            LOG.info("User is trying to login the system");
+            return userService.loginUser(email, password);
+        } else {
+            return UnAuthorizeUser();
+        }
+    }
+
+
+    @GetMapping("/verification")
+    public ResponseEntity<Object> AccountVerification(@RequestHeader("Authorization") String token, @RequestHeader Long id, @RequestHeader String emailToken, @RequestHeader String smsToken) {
+        if (authorization(token)) {
+            LOG.info("Doing the account verification through tokens");
+            return userService.AccountVerification(id, emailToken, smsToken);
+        } else {
+            return UnAuthorizeUser();
+        }
+    }
+
     @GetMapping("/list")
     public ResponseEntity<Object> listOfUsers(@RequestHeader("Authorization") String token) {
-        if (authorization(token)) {
-            return userService.listAllUsers();
-        } else {
+        if (!authorization(token)) {
             LOG.info("Unauthorized user trying to access the database");
             return UnAuthorizeUser();
+        } else {
+            return userService.listAllUsers();
         }
     }
 
@@ -50,7 +83,7 @@ public class UserController {
     public ResponseEntity<Object> add(@RequestHeader("Authorization") String token, @RequestBody User user) {
         try{
             if (authorization(token)) {
-                return userService.saveUser(user);
+                return userService.addUser(user);
             } else {
                 LOG.info("Unauthorized user trying to access the database");
                 return UnAuthorizeUser();
@@ -74,6 +107,7 @@ public class UserController {
     @PutMapping("/update")
     public ResponseEntity<Object> UpdateUser(@RequestHeader("Authorization") String token, @RequestBody User user) {
         if (authorization(token)) {
+            LOG.info("Updating the user");
             return userService.updateUser(user);
         } else {
             LOG.info("UnAuthorized User was trying to access the database");
@@ -97,20 +131,9 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<Object> DeleteUser(@RequestHeader("Authorization") String token, @RequestParam("delete") Long id) {
-        if (authorization(token)) {
-            try{
-                return userService.deleteUser(id);
-            }catch (Exception exception){
-                LOG.info("Exception: "+exception.getMessage());
-                return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-        else{
-            return UnAuthorizeUser();
-        }
-    }
+
+
+
 
 //    @PostMapping("/sms")
 //    public ResponseEntity<Object> SendSms(@RequestHeader("Authorization") String token,@RequestHeader long id, @RequestBody String message) {
