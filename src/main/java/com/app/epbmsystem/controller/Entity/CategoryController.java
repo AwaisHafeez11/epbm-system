@@ -15,11 +15,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @RestController
 @RequestMapping("/category")
-@Api(value="category Operations - CRUD REST API's for the Category")
 public class CategoryController {
     private static final Logger LOG =  LogManager.getLogger(CategoryController.class);
     private static String token="awais1234";
-    @Autowired
+
     final CategoryService categoryService;
 
 

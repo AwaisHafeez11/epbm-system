@@ -4,6 +4,8 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -17,6 +19,12 @@ public class Role implements Serializable {
     private String createdDate;
     private String updatedDate;
     private boolean active;
+
+    /**
+     * One Role can have multiple Permissions, and one permission can have multiple roles
+     */
+    @ManyToMany(targetEntity = Permission.class,fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    private List<Permission> permissions = new ArrayList<>();
 
     public Role(Long id, String name, String createdDate, String updatedDate, boolean active) {
         this.id = id;
@@ -68,6 +76,14 @@ public class Role implements Serializable {
 
     public void setUpdatedDate(String updatedDate) {
         this.updatedDate = updatedDate;
+    }
+
+    public List<Permission> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<Permission> permissions) {
+        this.permissions = permissions;
     }
 }
 

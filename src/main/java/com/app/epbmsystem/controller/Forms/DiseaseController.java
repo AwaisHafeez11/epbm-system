@@ -13,9 +13,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @RestController
 @RequestMapping("/disease")
-@Api(value="Disease Operations - CRUD REST API's for the Disease")
 public class DiseaseController {
-      final DiseaseService diseaseService;
+
+    final DiseaseService diseaseService;
 
     public DiseaseController(DiseaseService diseaseService) {
         this.diseaseService = diseaseService;

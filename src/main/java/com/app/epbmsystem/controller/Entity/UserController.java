@@ -13,7 +13,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @RestController
 @RequestMapping("/users")
-@Api(value="User Operations - CRUD REST API's for the User")
 public class UserController {
     private static final Logger LOG =  LogManager.getLogger(UserController.class);
     private static String token="awais1234";

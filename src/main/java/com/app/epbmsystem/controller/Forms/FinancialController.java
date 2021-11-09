@@ -15,7 +15,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @RestController
 @RequestMapping("/financialForm")
-@Api(value="FinancialForm Operations - CRUD REST API's for the FinancialForm")
 public class FinancialController {
     private static final Logger LOG =  LogManager.getLogger(FinancialController.class);
     private static String token="awais1234";

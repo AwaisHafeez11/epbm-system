@@ -12,7 +12,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @EnableSwagger2
 @RestController
-@Api(value = "Hospital crud Operations")
+@RequestMapping("/hospital")
 public class HospitalController {
     private static final Logger LOG = LogManager.getLogger(HospitalController.class);
     final HospitalService hospitalService;

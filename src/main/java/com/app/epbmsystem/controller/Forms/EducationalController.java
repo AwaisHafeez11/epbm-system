@@ -13,11 +13,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @RestController
 @RequestMapping("/educationalForm")
-@Api(value="Educationalform Operations - CRUD REST API's for the educationalform")
 public class EducationalController {
 
     private static final Logger LOG =  LogManager.getLogger(FinancialController.class);
-    private static String token="awais1234";
+    private static final String token="awais1234";
 
     final EducationalService educationalService;
 

@@ -72,9 +72,6 @@ public class Permission implements Serializable {
         this.updatedDate = updatedDate;
     }
 
-    /**
-     * One Role can have multiple Permissions, and one permission can have multiple roles
-     */
-    @ManyToMany(targetEntity = Permission.class,fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    private List<Permission> permissions = new ArrayList<>();
+
+
 }

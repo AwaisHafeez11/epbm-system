@@ -15,15 +15,15 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @RestController
 @RequestMapping("/medical")
-@Api(value="Medical Operations - CRUD REST API's for the medical from")
 public class MedicalController {
     final MedicalService medicalService;
-    private static final Logger LOG =  LogManager.getLogger(PermissionController.class);
-    private static String token="awais1234";
+    private static final Logger LOG = LogManager.getLogger(PermissionController.class);
+    private static String token = "awais1234";
 
     public MedicalController(MedicalService medicalService) {
         this.medicalService = medicalService;
     }
+
     public boolean authorization(String token) {
         LOG.info("Authorizing the user ");
         return MedicalController.token.equals(token);
@@ -46,16 +46,16 @@ public class MedicalController {
 
     @PostMapping("/add")
     public ResponseEntity<Object> add(@RequestHeader("Authorization") String token, @RequestBody MedicalForm medicalForm) {
-        try{
+        try {
             if (authorization(token)) {
                 return medicalService.saveMedicalForm(medicalForm);
             } else {
                 LOG.info("Unauthorized user trying to access the database");
                 return UnAuthorizeUser();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             LOG.info(e.getMessage());
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -75,22 +75,20 @@ public class MedicalController {
             return medicalService.updateMedicalForm(medicalForm);
         } else {
             LOG.info("UnAuthorized User was trying to access the database");
-            return UnAuthorizeUser() ;
+            return UnAuthorizeUser();
         }
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> DeletePermission(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-
         if (authorization(token)) {
-            try{
+            try {
                 return medicalService.deleteMedicalForm(id);
-            }catch (Exception exception){
+            } catch (Exception exception) {
                 LOG.info("UnAuthorized User was trying to access the database");
                 return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        }
-        else{
+        } else {
             return UnAuthorizeUser();
         }
     }
@@ -98,17 +96,15 @@ public class MedicalController {
     @DeleteMapping("/delete")
     public ResponseEntity<Object> DeleteCategory(@RequestHeader("Authorization") String token, @RequestParam("delete") Long id) {
         if (authorization(token)) {
-            try{
+            try {
                 return medicalService.deleteMedicalForm(id);
-            }catch (Exception exception){
-                LOG.info("Exception: "+exception.getMessage());
+            } catch (Exception exception) {
+                LOG.info("Exception: " + exception.getMessage());
                 return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        }
-        else{
+        } else {
             return UnAuthorizeUser();
         }
     }
-
 
 }

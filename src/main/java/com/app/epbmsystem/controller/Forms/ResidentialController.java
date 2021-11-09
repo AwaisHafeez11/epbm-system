@@ -14,7 +14,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @RestController
 @RequestMapping("/residential")
-@Api(value="residentialForm Operations - CRUD REST API's for the residentialForm")
 public class ResidentialController {
     private static final Logger LOG =  LogManager.getLogger(ResidentialController.class);
     private static String token="awais1234";
@@ -86,7 +85,8 @@ public class ResidentialController {
         if (authorization(token)) {
             try{
                 return residentialService.deleteResidentialForm(id);
-            }catch (Exception exception){
+            }
+            catch (Exception exception){
                 LOG.info("UnAuthorized User was trying to access the database");
                 return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }

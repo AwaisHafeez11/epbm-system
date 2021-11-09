@@ -14,10 +14,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @RestController
 @RequestMapping("/role")
-@Api(value="role Operations - CRUD REST API's for the role")
 public class RoleController {
-    @Autowired
-     final RoleService roleService;
+    final RoleService roleService;
     private static final Logger LOG =  LogManager.getLogger(RoleController.class);
     private static String token="awais1234";
 
