@@ -3,14 +3,12 @@ package com.app.epbmsystem.controller.Entity;
 import com.app.epbmsystem.model.Entity.Category;
 
 import com.app.epbmsystem.service.CategoryService;
-import io.swagger.annotations.Api;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @EnableSwagger2
 @RestController
@@ -49,13 +47,18 @@ public class CategoryController {
     @PostMapping("/add")
     public ResponseEntity<Object> add(@RequestHeader("Authorization") String token, @RequestBody Category category) {
         try{
-            if (authorization(token)) {
+            if (authorization(token))
+            {
                 return categoryService.saveCategory(category);
-            } else {
+            }
+            else
+            {
                 LOG.info("Unauthorized user trying to access the database");
                 return UnAuthorizeUser();
             }
-        }catch (Exception e){
+        }
+        catch (Exception e)
+        {
             LOG.info(e.getMessage());
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -63,9 +66,12 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getCategoryByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
-        if (authorization(token)) {
+        if (authorization(token))
+        {
             return categoryService.getCategory(id); //It will return the Response
-        } else {
+        }
+        else
+        {
             LOG.info("UnAuthorized User was trying to access the database");
             return UnAuthorizeUser(); //If the user is not authorized
         }
@@ -73,9 +79,12 @@ public class CategoryController {
 
     @PutMapping("/update")
     public ResponseEntity<Object> UpdateCategory(@RequestHeader("Authorization") String token, @RequestBody Category category) {
-        if (authorization(token)) {
+        if (authorization(token))
+        {
             return categoryService.updateCategory(category);
-        } else {
+        }
+        else
+        {
             LOG.info("UnAuthorized User was trying to access the database");
             return UnAuthorizeUser() ;
         }
@@ -93,22 +102,28 @@ public class CategoryController {
                 return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-        else{
+        else
+        {
             return UnAuthorizeUser();
         }
     }
 
     @DeleteMapping("/delete")
     public ResponseEntity<Object> DeleteCategory(@RequestHeader("Authorization") String token, @RequestParam("delete") Long id) {
-        if (authorization(token)) {
-            try{
+        if (authorization(token))
+        {
+            try
+            {
                 return categoryService.deleteCategory(id);
-            }catch (Exception exception){
+            }
+            catch (Exception exception)
+            {
                 LOG.info("Exception: "+exception.getMessage());
                 return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-        else{
+        else
+        {
             return UnAuthorizeUser();
         }
     }

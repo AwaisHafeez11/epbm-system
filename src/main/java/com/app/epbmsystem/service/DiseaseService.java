@@ -2,6 +2,7 @@ package com.app.epbmsystem.service;
 
 import com.app.epbmsystem.model.Forms.Disease;
 import com.app.epbmsystem.repository.DiseaseRepository;
+import com.app.epbmsystem.util.DateTime;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,10 @@ public class DiseaseService {
         this.diseaseRepository = diseaseRepository;
     }
 
+    /**
+     * List of all active and inactive Diseases return
+     * @return
+     */
     public ResponseEntity<Object> listAllDisease(){   // List of all residentialForm
         try {
             List<Disease> diseaseList= diseaseRepository.findAll();
@@ -40,16 +45,48 @@ public class DiseaseService {
         }
     }
 
+    /**
+     * This method is adding the disease
+     * @param disease
+     * @return
+     */
     public ResponseEntity<Object> saveDisease(Disease disease) {
-        diseaseRepository.save(disease);
-        return new ResponseEntity<>("disease Added /n Thank you for adding   ",HttpStatus.OK);
+        try{
+            Optional<Disease> existingDisease= diseaseRepository.findDiseaseByName(disease.getName());
+            if(existingDisease.isPresent())
+            {   if(existingDisease.get().isActive())
+                {return new ResponseEntity<>("Disease Already exists",HttpStatus.BAD_REQUEST);}
+                else
+                {
+                    existingDisease.get().setActive(true);
+                    diseaseRepository.save(existingDisease.get());
+                    return new ResponseEntity<>(" added inactive disease successfully",HttpStatus.OK);
+                }
+            }
+            else
+            {
+                disease.setCreatedDate(DateTime.getDateTime());
+                diseaseRepository.save(disease);
+                return new ResponseEntity<>("disease Successfully added",HttpStatus.OK);
+            }
+
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    /**
+     * This serivce method is updating the disease
+     * @param disease
+     * @return
+     */
     public ResponseEntity<Object> updateDisease(Disease disease){                  // Update user
         try{
             Long id = disease.getId();
-            DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             if (diseaseRepository.existsById(id)) {
+                disease.setUpdatedDate(DateTime.getDateTime());
                 diseaseRepository.save(disease);
                 return new ResponseEntity<>("Disease updated thank you", HttpStatus.OK);
             } else {
@@ -62,20 +99,38 @@ public class DiseaseService {
         }
     }
 
-    public ResponseEntity<Object> deleteDisease(Long id){                   //Financialform deleted
+    /**
+     * Delete disease from db by using disease ID
+     * @param id
+     * @return
+     */
+    public ResponseEntity<Object> deleteDisease(Long id){
         try{
-            if (diseaseRepository.existsById(id)) {
-                diseaseRepository.delete(disease);
+            Optional<Disease> existingDisease= diseaseRepository.findById(id);
+            if (existingDisease.isPresent())
+            {
+                existingDisease.get().setUpdatedDate(DateTime.getDateTime());
+                existingDisease.get().setActive(false);
+                diseaseRepository.save(existingDisease.get());
                 return new ResponseEntity<>(" disease has been Deleted", HttpStatus.OK);
-            } else {
+            }
+            else
+            {
                 return new ResponseEntity<>("disease Not exists Please enter Valid ID", HttpStatus.NOT_FOUND);
             }
         }
-        catch (Exception e){
+        catch (Exception e)
+        {
             LOG.info("Exception: " + e.getMessage());
-            return new ResponseEntity<>("disease deleted", HttpStatus.BAD_REQUEST);}
+            return new ResponseEntity<>("disease deleted", HttpStatus.BAD_REQUEST);
+        }
     }
 
+    /**
+     * getting disease by id
+     * @param id
+     * @return
+     */
     public ResponseEntity<Object> getDisease(Long id){
         try{
             Optional<Disease> diseaseList = diseaseRepository.findById(id);
@@ -86,6 +141,45 @@ public class DiseaseService {
         }
         catch (Exception exception)
         {return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
+    }
+
+    /**
+     * display list of all active diseases
+     * @return
+     */
+    public ResponseEntity<Object> listAllActiveUsers() {
+        try {
+            List<Disease> diseaseList = diseaseRepository.findAllByActive(true);
+            if (diseaseList.isEmpty()) {
+                return new ResponseEntity<>("There are no Disease in the database", HttpStatus.NOT_FOUND);
+            } else {
+                return new ResponseEntity<>(diseaseList, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            LOG.info("Exception"+ e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * display list of all inactive diseases
+     * @return
+     */
+    public ResponseEntity<Object> listAllInactiveDiseases(){
+        try {
+            List<Disease> diseaseList = diseaseRepository.findAllByActive(false);
+            if (diseaseList.isEmpty()) {
+                return new ResponseEntity<>("There are no Disease in the database", HttpStatus.NOT_FOUND);
+            } else {
+                return new ResponseEntity<>(diseaseList, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            LOG.info("Exception"+ e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+
     }
 
 }

@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 @Entity
@@ -14,11 +15,11 @@ public class Disease implements Serializable {
     @Column(nullable = false)
     private String name;
 
-    private String createdDate;
-    private String updatedDate;
+    private Date createdDate;
+    private Date updatedDate;
     private boolean active;
 
-    public Disease(Long id, String name, String createdDate, String updatedDate, boolean active) {
+    public Disease(Long id, String name, Date createdDate, Date updatedDate, boolean active) {
         this.id = id;
         this.name = name;
         this.createdDate = createdDate;
@@ -54,19 +55,19 @@ public class Disease implements Serializable {
         this.name = name;
     }
 
-    public String getCreatedDate() {
+    public Date getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(String createdDate) {
+    public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
     }
 
-    public String getUpdatedDate() {
+    public Date getUpdatedDate() {
         return updatedDate;
     }
 
-    public void setUpdatedDate(String updatedDate) {
+    public void setUpdatedDate(Date updatedDate) {
         this.updatedDate = updatedDate;
     }
 }
