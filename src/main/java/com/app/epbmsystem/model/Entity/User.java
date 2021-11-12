@@ -4,6 +4,7 @@ import com.app.epbmsystem.model.Forms.EducationalForm;
 import com.app.epbmsystem.model.Forms.FinancialForm;
 import com.app.epbmsystem.model.Forms.MedicalForm;
 import com.app.epbmsystem.model.Forms.ResidentialForm;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -23,7 +24,7 @@ public class User implements Serializable {
     @Column(unique = true)
     private String email;
     private String password;
-    @Column(unique = true)
+    @Column(unique = false)
     private String phoneNumber;
     @Column(nullable = false)
     private String gender;
@@ -71,6 +72,7 @@ public class User implements Serializable {
     @ManyToMany(targetEntity = Role.class,fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<Role> roles = new ArrayList<>();
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     /**
      * One user can have one category, and one category can have multiple users
      */

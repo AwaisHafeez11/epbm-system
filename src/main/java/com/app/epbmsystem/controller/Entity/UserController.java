@@ -7,10 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import io.swagger.annotations.Api;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-import java.util.Optional;
 
 @EnableSwagger2
 @RestController
@@ -19,6 +16,7 @@ public class UserController {
     private static final Logger LOG =  LogManager.getLogger(UserController.class);
     private static String token="awais1234";
     final UserService userService;
+    User user;
 
     /**
      * Autowiring through constructor
@@ -83,9 +81,12 @@ public class UserController {
      * @return
      */
     @PostMapping("/signup")
-    public ResponseEntity<Object> addUser(@RequestBody User user) {
-        LOG.info("Adding the user");
-        return userService.addUser(user);
+    public ResponseEntity<Object> addUser(@RequestBody User user,@RequestHeader("Authorization") String token) {
+        if(authorization(token))
+        {LOG.info("Adding the user");
+        return userService.addUser(user);}
+        else
+        {return new ResponseEntity<>("Please Authorize first",HttpStatus.BAD_REQUEST);}
     }
 
     /**
@@ -126,14 +127,14 @@ public class UserController {
     /**
      * User can resend OTP after expired previous received token
      * @param token
-     * @param user
+     * @param email
      * @return
      */
-    @PostMapping("/resend-verification-token")
-    public ResponseEntity<Object> resendVerificationToken(@RequestHeader("Authorization") String token,@RequestBody User user ){
+    @PutMapping ("/resendVerificationToken")
+    public ResponseEntity<Object> resendVerificationToken(@RequestHeader("Authorization") String token,@RequestHeader  String email ){
         if (authorization(token)) {
             LOG.info("Resending the verification tokens");
-            return userService.resendVerificationToken(user.getEmail());
+            return userService.resendVerificationToken(email);
         } else {
             return UnAuthorizeUser();
         }
@@ -208,8 +209,5 @@ public class UserController {
             return UnAuthorizeUser();
         }
     }
-
-
-
 
 }

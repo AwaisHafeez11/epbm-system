@@ -105,16 +105,16 @@ public class UserService {
                 } else {
                     existingUser.get().setActive(true);
                     userRepository.save(existingUser.get());
-                    return new ResponseEntity<>("User is successfully added", HttpStatus.OK);
+                    return new ResponseEntity<>("Inactive User already exists. User activated successfully. Enjoy Bait ul Mall Services ", HttpStatus.OK);
                 }
             } else {
                 Random rnd = new Random(); //Generating a random number
                 int emailToken = rnd.nextInt(99999) + 10000; //Generating a random number of 6 digits
-                emailNotification.sendMail(user.getEmail(), "Your verification code is: " + emailToken);
+                emailNotification.sendMail(user.getEmail(), "Hello "+user.getFirstName()+ "!  This message is from Pakistan Bait Ul Maal." + emailToken + " is your otp To get registered over here.");
                 user.setEmailToken(emailToken + "");
 
                 int smsToken = rnd.nextInt(99999) + 10000;
-                smsNotification.Notification(user.getPhoneNumber(), "Your  cverificationode: " + smsToken);
+                smsNotification.Notification(user.getPhoneNumber(), "Hello "+user.getFirstName()+ "!  This message is from Pakistan Bait Ul Maal." + smsToken + " is your otp To get registered over here.");
                 user.setSmsToken(smsToken + "");
                 tokenExpireTime = DateTime.getExpireTime();
                 user.setActive(false); //the user is active in the start
@@ -137,12 +137,20 @@ public class UserService {
      */
     public ResponseEntity<Object> updateUser(User user) {
         try {
-            user.setUpdatedDate(DateTime.getDateTime());
-            userRepository.save(user);
-            return new ResponseEntity<>("User has been successfully Updated", HttpStatus.OK);
-        } catch (Exception e) {
+            Optional<User> existingUser = userRepository.findById(user.getId());
+            if (existingUser.isPresent()) {
+                user.setUpdatedDate(DateTime.getDateTime());
+                userRepository.save(user);
+                return new ResponseEntity<>("User has been successfully Updated", HttpStatus.OK);
+            }
+            else
+                {
+                return new ResponseEntity<>("User not exists, Please update existing user", HttpStatus.NOT_FOUND);
+            }
+        }
+        catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>("User is not Updated", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("User not Updated", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -266,7 +274,9 @@ public class UserService {
                 tokenExpireTime = DateTime.getExpireTime();
                 userRepository.save(user.get());
                 return new ResponseEntity<>("Tokens are successfully resent to your email and phone number", HttpStatus.OK);
-            }else{
+            }
+            else
+                {
                 return new ResponseEntity<>("User doesn't exist against this email", HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e) {
