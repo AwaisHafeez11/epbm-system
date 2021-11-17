@@ -5,6 +5,7 @@ import com.app.epbmsystem.model.Entity.Permission;
 import com.app.epbmsystem.model.Entity.Role;
 import com.app.epbmsystem.repository.RoleRepository;
 import com.app.epbmsystem.util.DateTime;
+import com.app.epbmsystem.util.SqlDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -52,8 +53,8 @@ public class RoleService {
              }
             else
             {
-                role.setCreatedDate(DateTime.getDateTime());
-                role.setUpdatedDate(DateTime.getDateTime());
+                role.setCreatedDate(SqlDate.getDateInSqlFormat());
+                role.setUpdatedDate(SqlDate.getDateInSqlFormat());
                 role.setActive(true);
                 roleRepository.save(role);
                 return new ResponseEntity<>("Role Added",HttpStatus.OK);
@@ -101,7 +102,7 @@ public class RoleService {
             {
                 if (existingRole.get().isActive())
                 {
-                    existingRole.get().setUpdatedDate(DateTime.getDateTime());
+                    existingRole.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
                     roleRepository.save(existingRole.get());
                     return new ResponseEntity<>("Role updated thank you", HttpStatus.OK);
                 }
@@ -133,7 +134,7 @@ public class RoleService {
             {
                 if (existingRole.get().isActive())
                 {
-                    existingRole.get().setUpdatedDate(DateTime.getDateTime());
+                    existingRole.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
                     existingRole.get().setActive(false);
                     roleRepository.save(existingRole.get());
                     return new ResponseEntity<>("Role Inactive/Deleted into the DB",HttpStatus.OK);

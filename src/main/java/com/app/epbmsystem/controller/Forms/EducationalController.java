@@ -280,13 +280,19 @@ public class EducationalController {
         }
     }
 
+    /**
+     * Return list of forms by specific user
+     * @param token
+     * @param userId
+     * @return
+     */
     @GetMapping("/searchEducationalFormByUser")
     public ResponseEntity<Object> ListAllUserEducationalForms(@RequestHeader("Authorization")String token,@RequestParam("UserId")Long userId){
         try{
             if (authorization(token))
             {
                 LOG.info("Token authorized");
-                return educationalService.ListOfUserMedicalForms(userId);
+                return educationalService.ListOfUserEducationalForms(userId);
             }
             else
             {
@@ -301,13 +307,19 @@ public class EducationalController {
         }
     }
 
-    @GetMapping("/inReviewForms")
-    public ResponseEntity<Object> ListAllFormsByStatus(@RequestHeader("Authorization")String token,@RequestParam("UserId")Long userId){
+    /**
+     * Return a list of forms for specific user
+     * @param token
+     * @param status
+     * @return
+     */
+    @GetMapping("/searchFormsByStatus")
+    public ResponseEntity<Object> ListAllFormsByStatus(@RequestHeader("Authorization")String token,@RequestParam("UserId")String status){
         try{
             if (authorization(token))
             {
                 LOG.info("Token authorized");
-                return educationalService.ListOfUserMedicalForms(userId);
+                return educationalService.ListOfEducationalFormsByApplicationStatus(status);
             }
             else
             {
@@ -318,6 +330,7 @@ public class EducationalController {
         }
         catch (Exception e)
         {
+            LOG.info("Exception throws by inReviewForms API ");
             return new ResponseEntity<>("Exception: "+e.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }

@@ -1,5 +1,6 @@
 package com.app.epbmsystem.service;
 
+import com.app.epbmsystem.model.Forms.EducationalForm;
 import com.app.epbmsystem.model.Forms.MedicalForm;
 import com.app.epbmsystem.model.Forms.ResidentialForm;
 import com.app.epbmsystem.repository.ResidentialRepository;
@@ -249,6 +250,53 @@ public class ResidentialService {
         } catch (Exception e) {
             LOG.info("Method throws exception :"+e.getMessage() + e.getCause());
             return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Returns a list of Forms of specific user
+     * @param id
+     * @return
+     */
+    public ResponseEntity<Object> ListOfUserResidentialForms(Long id){
+        try {
+            List<ResidentialForm> existingForm = residentialRepository.findResidentialFormsByUserId(id);
+            if (existingForm.isEmpty()) {
+                return new ResponseEntity<>("There are no application forms for the entered user ID", HttpStatus.NOT_FOUND);
+            } else {
+                return new ResponseEntity<>(existingForm, HttpStatus.OK);
+            }
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * returns a List of Forms by specific application Status
+     * @param applicationStatus
+     * @return
+     */
+    public ResponseEntity<Object> ListOfResidentialFormsByApplicationStatus(String applicationStatus)
+    {
+        try{
+            List<ResidentialForm> existingForms= residentialRepository.findResidentialFormsByApplicationStatus(applicationStatus);
+            if (existingForms.isEmpty())
+            {
+                LOG.info("There is no "+applicationStatus+" forms exists",HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>("There is no In review forms exists",HttpStatus.NO_CONTENT);
+            }
+            else
+            {
+                LOG.info("Status: In review Forms exists");
+                return new ResponseEntity<>("Status: "+applicationStatus+" forms exists" + existingForms,HttpStatus.OK);
+            }
+        }
+        catch (Exception e)
+        {
+            LOG.info("Exception throws by method(ResidentialFormsByApplicationStatus) "+e.getMessage());
+            return new ResponseEntity<>("Exception"+e.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
 

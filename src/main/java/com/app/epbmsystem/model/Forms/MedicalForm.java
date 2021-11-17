@@ -2,8 +2,6 @@ package com.app.epbmsystem.model.Forms;
 
 import lombok.Data;
 
-import com.app.epbmsystem.model.Entity.Role;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
@@ -12,7 +10,11 @@ import java.util.List;
 
 @Data
 @Entity
-
+@Table(name = "role", indexes = {
+        @Index(name = "created_date_index", columnList = "createdDate"),
+        @Index(name = "active_index", columnList = "active"),
+        @Index(name = "applicationStatus_index",columnList = "applicationStatus")
+})
 public class MedicalForm implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY )

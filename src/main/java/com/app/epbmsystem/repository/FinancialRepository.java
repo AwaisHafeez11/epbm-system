@@ -16,4 +16,11 @@ public interface FinancialRepository extends JpaRepository<FinancialForm,Long> {
     List<FinancialForm> findByStartDate(Date startDate);
     List<FinancialForm> findByCreatedDateBetweenOrderByUpdatedDateAsc(Date startDate,Date EndDate);
     List<FinancialForm> findByActive(Boolean active);
+
+    @Query(value = "SELECT * from financial_form where user_id",nativeQuery = true)
+    List<FinancialForm> findFinancialFormByUserId(Long user_id);
+
+    @Query(value = "SELECT * from financial_form where applicationStatus",nativeQuery = true)
+    List<FinancialForm> findEducationalFormsByApplicationStatus(String applicationStatus);
+
 }

@@ -253,4 +253,52 @@ public class MedicalService {
 
 
     }
+
+    /**
+     * Returns a list of Forms of specific user
+     * @param id
+     * @return
+     */
+    public ResponseEntity<Object> ListOfUserMedicalForms(Long id){
+        try {
+            List<MedicalForm> existingForm = medicalRepository.findMedicalFormsByUserId(id);
+
+            if (existingForm.isEmpty()) {
+                return new ResponseEntity<>("There are no application forms for the entered user ID", HttpStatus.NOT_FOUND);
+            } else {
+                return new ResponseEntity<>(existingForm, HttpStatus.OK);
+            }
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * returns a List of Forms by specific application Status
+     * @param applicationStatus
+     * @return
+     */
+    public ResponseEntity<Object> ListOfMedicalFormsByApplicationStatus(String applicationStatus)
+    {
+        try{
+            List<MedicalForm> existingForms= medicalRepository.findMedicalFormsByApplicationStatus(applicationStatus);
+            if (existingForms.isEmpty())
+            {
+                LOG.info("There is no In review forms exists",HttpStatus.NO_CONTENT);
+                return new ResponseEntity<>("There is no In review forms exists",HttpStatus.NO_CONTENT);
+            }
+            else
+            {
+                LOG.info("Status: In review Forms exists");
+                return new ResponseEntity<>("Status: In review forms exists" + existingForms,HttpStatus.OK);
+            }
+        }
+        catch (Exception e)
+        {
+            LOG.info("Exception throws by method(ListOfMedicalFormsByApplicationStatus) "+e.getMessage());
+            return new ResponseEntity<>("Exception"+e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
 }

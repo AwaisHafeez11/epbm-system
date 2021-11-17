@@ -1,5 +1,6 @@
 package com.app.epbmsystem.repository;
 
+import com.app.epbmsystem.model.Forms.EducationalForm;
 import com.app.epbmsystem.model.Forms.ResidentialForm;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,12 @@ public interface ResidentialRepository extends JpaRepository<ResidentialForm,Lon
     List<ResidentialForm> findByStartDate(Date startDate);
     List<ResidentialForm> findByCreatedDateBetweenOrderByUpdatedDateAsc(Date startDate,Date endDate);
     List<ResidentialForm> findAllByActive(Boolean active);
+
+    @Query(value = "SELECT * from residential_form where user_id",nativeQuery = true)
+    List<ResidentialForm> findResidentialFormsByUserId(Long user_id);
+
+    @Query(value = "SELECT * from residential_form where applicationStatus",nativeQuery = true)
+    List<ResidentialForm> findResidentialFormsByApplicationStatus(String applicationStatus);
+
+
 }

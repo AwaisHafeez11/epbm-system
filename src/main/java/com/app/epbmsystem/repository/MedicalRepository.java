@@ -1,6 +1,7 @@
 package com.app.epbmsystem.repository;
 
 import com.app.epbmsystem.model.Forms.Disease;
+import com.app.epbmsystem.model.Forms.EducationalForm;
 import com.app.epbmsystem.model.Forms.FinancialForm;
 import com.app.epbmsystem.model.Forms.MedicalForm;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,10 @@ public interface MedicalRepository extends JpaRepository<MedicalForm,Long> {
     List<MedicalForm> findByStartDate(Date startDate);
     List<MedicalForm> findByCreatedDateBetweenOrderByUpdatedDateAsc(Date startDate,Date EndDate);
     List<MedicalForm> findAllByActive(Boolean active);
+
+    @Query(value = "SELECT * from medical_form where user_id",nativeQuery = true)
+    List<MedicalForm> findMedicalFormsByUserId(Long user_id);
+
+    @Query(value = "SELECT * from medical_form where applicationStatus",nativeQuery = true)
+    List<MedicalForm> findMedicalFormsByApplicationStatus(String applicationStatus);
 }

@@ -8,6 +8,11 @@ import java.sql.Date;
 
 @Data
 @Entity
+@Table(name = "role", indexes = {
+        @Index(name = "created_date_index", columnList = "createdDate"),
+        @Index(name = "active_index", columnList = "active"),
+        @Index(name = "applicationStatus_index",columnList = "applicationStatus")
+})
 public class ResidentialForm implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY )

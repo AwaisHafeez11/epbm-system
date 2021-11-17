@@ -243,7 +243,7 @@ public class EducationalService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> ListOfUserMedicalForms(Long id){
+    public ResponseEntity<Object> ListOfUserEducationalForms(Long id){
         try {
             List<EducationalForm> existingForm = educationalRepository.findEducationalFormsByUserId(id);
             if (existingForm.isEmpty()) {
@@ -258,7 +258,12 @@ public class EducationalService {
         }
     }
 
-    public ResponseEntity<Object> ListOfMedicalFormsByApplicationStatus(String applicationStatus)
+    /**
+     * returns a List of Forms by specific application Status
+     * @param applicationStatus
+     * @return
+     */
+    public ResponseEntity<Object> ListOfEducationalFormsByApplicationStatus(String applicationStatus)
     {
         try{
             List<EducationalForm> existingForms= educationalRepository.findEducationalFormsByApplicationStatus(applicationStatus);
@@ -279,4 +284,6 @@ public class EducationalService {
             return new ResponseEntity<>("Exception"+e.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
+
+
 }

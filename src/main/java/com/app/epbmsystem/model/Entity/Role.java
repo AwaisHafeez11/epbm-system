@@ -3,12 +3,15 @@ package com.app.epbmsystem.model.Entity;
 import lombok.Data;
 import javax.persistence.*;
 import java.io.Serializable;
+import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-@Data
 @Entity
+@Data
+@Table(name = "role", indexes = {
+        @Index(name = "created_date_index", columnList = "createdDate"),
+        @Index(name = "active_index", columnList = "active")})
 public class Role implements Serializable {
 
     @Id

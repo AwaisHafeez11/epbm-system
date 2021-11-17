@@ -174,7 +174,7 @@ public class FinancialController {
      * @return
      */
     @GetMapping("/list/Inactive")
-    public ResponseEntity<Object> listOfInActiveMedicalForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfInActiveFinancialForms(@RequestHeader("Authorization") String token) {
         if (authorization(token)) {
             LOG.info("Listing all the financial forms that are Inactive");
             return financialService.listAllInactive();
@@ -189,13 +189,68 @@ public class FinancialController {
      * @return
      */
     @GetMapping("/list/active")
-    public ResponseEntity<Object> listOfActiveMedicalForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfActiveFinancialForms(@RequestHeader("Authorization") String token) {
         if (authorization(token)) {
             LOG.info("Listing all the financial that are active");
             return financialService.listAllActive();
         } else {
             LOG.info("Unautorize user tried to access system");
             return UnAuthorizeUser();
+        }
+    }
+
+    /**
+     * Return list of forms by specific user
+     * @param token
+     * @param userId
+     * @return
+     */
+    @GetMapping("/searchFinancialFormByUser")
+    public ResponseEntity<Object> ListAllUserFinancialForms(@RequestHeader("Authorization")String token,@RequestParam("UserId")Long userId){
+        try{
+            if (authorization(token))
+            {
+                LOG.info("Token authorized");
+                return financialService.findUserFinancialForms(userId);
+            }
+            else
+            {
+                LOG.info("Token not authorized");
+                return new ResponseEntity<>("Please enter valid token first",HttpStatus.UNAUTHORIZED);
+            }
+
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>("Exception: "+e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Return a list of forms for specific user
+     * @param token
+     * @param status
+     * @return
+     */
+    @GetMapping("/searchFormsByStatus")
+    public ResponseEntity<Object> ListAllFormsByStatus(@RequestHeader("Authorization")String token,@RequestParam("UserId")String status){
+        try{
+            if (authorization(token))
+            {
+                LOG.info("Token authorized");
+                return financialService.ListOfFinancialFormsByApplicationStatus(status);
+            }
+            else
+            {
+                LOG.info("Token not authorized");
+                return new ResponseEntity<>("Please enter valid token first",HttpStatus.UNAUTHORIZED);
+            }
+
+        }
+        catch (Exception e)
+        {
+            LOG.info("Exception throws by inReviewForms API ");
+            return new ResponseEntity<>("Exception: "+e.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
 

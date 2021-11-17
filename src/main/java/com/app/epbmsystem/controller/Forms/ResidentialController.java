@@ -261,6 +261,61 @@ public class ResidentialController {
         }
     }
 
+    /**
+     * Return list of forms by specific user
+     * @param token
+     * @param userId
+     * @return
+     */
+    @GetMapping("/searchResidentialFormByUser")
+    public ResponseEntity<Object> ListAllUserResidentialForms(@RequestHeader("Authorization")String token,@RequestParam("UserId")Long userId){
+        try{
+            if (authorization(token))
+            {
+                LOG.info("Token authorized");
+                return residentialService.ListOfUserResidentialForms(userId);
+            }
+            else
+            {
+                LOG.info("Token not authorized");
+                return new ResponseEntity<>("Please enter valid token first",HttpStatus.UNAUTHORIZED);
+            }
+
+        }
+        catch (Exception e)
+        {
+            return new ResponseEntity<>("Exception: "+e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Return a list of forms for specific user
+     * @param token
+     * @param status
+     * @return
+     */
+    @GetMapping("/searchFormsByStatus")
+    public ResponseEntity<Object> ListAllFormsByStatus(@RequestHeader("Authorization")String token,@RequestParam("UserId")String status){
+        try{
+            if (authorization(token))
+            {
+                LOG.info("Token authorized");
+                return residentialService.ListOfResidentialFormsByApplicationStatus(status);
+            }
+            else
+            {
+                LOG.info("Token not authorized");
+                return new ResponseEntity<>("Please enter valid token first",HttpStatus.UNAUTHORIZED);
+            }
+
+        }
+        catch (Exception e)
+        {
+            LOG.info("Exception throws by API searchFormsByStatus ");
+            return new ResponseEntity<>("Exception: "+e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
 
 
 }
