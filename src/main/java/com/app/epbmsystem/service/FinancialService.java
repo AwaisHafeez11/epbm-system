@@ -2,6 +2,7 @@ package com.app.epbmsystem.service;
 
 
 import com.app.epbmsystem.model.Forms.FinancialForm;
+import com.app.epbmsystem.model.Forms.MedicalForm;
 import com.app.epbmsystem.repository.FinancialRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -90,4 +92,112 @@ public class FinancialService {
         catch (Exception exception)
         {return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
     }
+
+    /**
+     * This method returns a list of forms w.r.t to specific date
+     * @param date
+     * @return
+     */
+    public ResponseEntity<Object> searchByDate(Date date) {
+        try {
+            LOG.info("Checking Weather data is present or not");
+            List<FinancialForm> existingForms = financialRepository.findByCreatedDate(date);
+            if (existingForms.isEmpty()) {
+                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+            } else {
+                LOG.info("List of financial application: Sorted by date ");
+                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            LOG.info("error in searchbydate in class financialService :"+e.getMessage() + e.getCause());
+
+            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * this method returns a list of forms from start date to the end of existing fields
+     * @param date
+     * @return
+     */
+    public ResponseEntity<Object> searchByStartDate(Date date) {
+        try {
+            LOG.info("Checking Weather data is present or not");
+            List<FinancialForm> existingForms = financialRepository.findByStartDate(date);
+            if (existingForms.isEmpty()) {
+                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+            } else {
+                LOG.info("List of financial application: Sorted by date ");
+                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            LOG.info("error in searchbydate in class financialService :"+e.getMessage() + e.getCause());
+
+            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * this method returns a list w.r.t start and end date
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public ResponseEntity<Object> searchByStartDateAndEndDate(Date startDate,Date endDate) {
+        try {
+            LOG.info("Checking Weather data is present or not between two dates");
+            List<FinancialForm> existingForms =financialRepository.findByCreatedDateBetweenOrderByUpdatedDateAsc(startDate,endDate);
+            if (existingForms.isEmpty()) {
+                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+            } else {
+                LOG.info("List of financial application: Sorted by date ");
+                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            LOG.info("error in searchbydate in class financialService :"+e.getMessage() + e.getCause());
+            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * display list of all active financial applications
+     * @return
+     */
+    public ResponseEntity<Object> listAllActive() {
+        try {
+            List<FinancialForm> existingForms = financialRepository.findByActive(true);
+            if (existingForms.isEmpty()) {
+                return new ResponseEntity<>("There are no financial application in the database", HttpStatus.NOT_FOUND);
+            } else {
+                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            LOG.info("Exception"+ e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * display list of all inactive Medical applications
+     * @return
+     */
+    public ResponseEntity<Object> listAllInactive(){
+        try {
+            List<FinancialForm> existingForms = financialRepository.findByActive(false);
+            if (existingForms.isEmpty()) {
+                return new ResponseEntity<>("There are no financial applications in the database", HttpStatus.NOT_FOUND);
+            } else {
+                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            LOG.info("Exception throws by listAllInactive financial applications at financialService  "+ e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+
+    }
+
+
+
 }

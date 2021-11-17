@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface DiseaseRepository extends JpaRepository<Disease,Long> {
     Optional<Disease> findDiseaseByName(String name);
     List<Disease> findAllByActive(Boolean active);
+
 }

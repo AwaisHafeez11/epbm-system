@@ -68,7 +68,7 @@ public class UserController {
     @GetMapping("/list/active")
     public ResponseEntity<Object> listOfActiveUsers(@RequestHeader("Authorization") String token) {
         if (authorization(token)) {
-            LOG.info("Listing all the users that are not active");
+            LOG.info("Listing all the users that are active");
             return userService.listOfActiveUsers();
         } else {
             return UnAuthorizeUser();
@@ -209,5 +209,6 @@ public class UserController {
             return UnAuthorizeUser();
         }
     }
+
 
 }

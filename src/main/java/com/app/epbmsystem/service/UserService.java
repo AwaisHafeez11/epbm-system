@@ -144,7 +144,7 @@ public class UserService {
                 return new ResponseEntity<>("User has been successfully Updated", HttpStatus.OK);
             }
             else
-                {
+            {
                 return new ResponseEntity<>("User not exists, Please update existing user", HttpStatus.NOT_FOUND);
             }
         }

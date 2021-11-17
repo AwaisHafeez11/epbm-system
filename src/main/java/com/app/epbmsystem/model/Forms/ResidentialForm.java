@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.sql.Date;
 
 @Data
 @Entity
@@ -15,7 +16,7 @@ public class ResidentialForm implements Serializable{
     private String occupation;
     @Column(nullable = false)
     private String fatherName;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private Long fatherContactNumber;
     @Column(nullable = false)
     private Long fatherCnic;
@@ -25,24 +26,12 @@ public class ResidentialForm implements Serializable{
     private Integer NoOfFamilyMembers;
     @Column(nullable = false)
     private String description;
-
-    public ResidentialForm(Long id, String occupation, String fatherName, Long fatherContactNumber, Long fatherCnic, Integer monthlyIncome, Integer noOfFamilyMembers, String description) {
-        this.id = id;
-        this.occupation = occupation;
-        this.fatherName = fatherName;
-        this.fatherContactNumber = fatherContactNumber;
-        this.fatherCnic = fatherCnic;
-        this.monthlyIncome = monthlyIncome;
-        NoOfFamilyMembers = noOfFamilyMembers;
-        this.description = description;
-    }
-
-
-    public ResidentialForm() {
-
-    }
-
-
-
+    private Date createdDate;
+    private Date updatedDate;
+    private String remarks;
+    private String applicationStatus;
+    private Boolean active;
+    private String currentLivingAddress;
+    private String qualification;
 
 }

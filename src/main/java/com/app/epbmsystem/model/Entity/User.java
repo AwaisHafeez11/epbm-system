@@ -38,7 +38,7 @@ public class User implements Serializable {
     private String smsToken;
     private String emailToken;
 
-  /**
+    /**
      * One user can have multiple residentialForms, and one residentialForm can have one user
      */
     @OneToMany(targetEntity = ResidentialForm.class,fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -48,7 +48,7 @@ public class User implements Serializable {
     /**
      * One user can have multiple EducationalForms, and one educationalForms can have one user
      */
-    @OneToMany(targetEntity = EducationalForm.class,fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = EducationalForm.class,fetch = FetchType.LAZY, cascade = CascadeType.ALL,orphanRemoval = true)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private List<EducationalForm> educationalForms = new ArrayList<>();
 
@@ -73,6 +73,7 @@ public class User implements Serializable {
     private List<Role> roles = new ArrayList<>();
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
     /**
      * One user can have one category, and one category can have multiple users
      */

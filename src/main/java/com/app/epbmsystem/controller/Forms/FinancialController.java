@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.sql.Date;
+
 @EnableSwagger2
 @RestController
 @RequestMapping("/financialForm")
@@ -78,22 +80,6 @@ public class FinancialController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Object> DeleteFinancialForm(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-
-        if (authorization(token)) {
-            try{
-                return financialService.deleteFinancialForm(id);
-            }catch (Exception exception){
-                LOG.info("UnAuthorized User was trying to access the database");
-                return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-        else{
-            return UnAuthorizeUser();
-        }
-    }
-
     @DeleteMapping("/delete")
     public ResponseEntity<Object> DeleteFinancialForm(@RequestHeader("Authorization") String token, @RequestParam("delete") Long id) {
         if (authorization(token)) {
@@ -109,6 +95,108 @@ public class FinancialController {
         }
     }
 
+    /**
+     * this method get list of application w.r.t from start date to the end of the existing record
+     * @param token
+     * @param date
+     * @return
+     */
+    @GetMapping("/searchByStartDate")
+    public ResponseEntity<Object> SearchFormByStartDate(@RequestHeader("Authorization")String token, @RequestParam("date") Date date) {
+        try
+        {
+            if (authorization(token))
+            {
+                return financialService.searchByStartDate(date);
+            } else {
+                return UnAuthorizeUser();
+            }
+        }
+        catch(Exception e){
+            LOG.info("Exception: search by date "+e.getMessage());
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
 
+        }
+    }
+
+    /**
+     * this method get list of application between Start date and End date
+     * @param token
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @GetMapping("/searchByStartDateToEndDate")
+    public ResponseEntity<Object> SearchFormByStartDateToEndDate(@RequestHeader("Authorization")String token, @RequestParam("Startdate") Date startDate,@RequestParam("EndDate") Date endDate) {
+        try
+        {
+            if (authorization(token))
+            {
+                return financialService.searchByStartDateAndEndDate(startDate,endDate);
+            } else {
+                return UnAuthorizeUser();
+            }
+        }
+        catch(Exception e)
+        {
+            LOG.info("Exception: search by date "+e.getMessage());
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * return list searched by specific date
+     * @param token
+     * @param date
+     * @return
+     */
+    @GetMapping("/searchByDate")
+    public ResponseEntity<Object> SearchFormByDate(@RequestHeader("Authorization")String token, @RequestParam("date") Date date) {
+        try
+        {
+            if (authorization(token))
+            {
+                return financialService.searchByDate(date);
+            } else {
+                return UnAuthorizeUser();
+            }
+        }
+        catch(Exception e){
+            LOG.info("Exception: search by date "+e.getMessage());
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+    }
+
+    /**
+     * List of all Inactive financialforms display
+     * @param token
+     * @return
+     */
+    @GetMapping("/list/Inactive")
+    public ResponseEntity<Object> listOfInActiveMedicalForms(@RequestHeader("Authorization") String token) {
+        if (authorization(token)) {
+            LOG.info("Listing all the financial forms that are Inactive");
+            return financialService.listAllInactive();
+        } else {
+            return UnAuthorizeUser();
+        }
+    }
+
+    /**
+     * List of all Inactive disease display
+     * @param token
+     * @return
+     */
+    @GetMapping("/list/active")
+    public ResponseEntity<Object> listOfActiveMedicalForms(@RequestHeader("Authorization") String token) {
+        if (authorization(token)) {
+            LOG.info("Listing all the financial that are active");
+            return financialService.listAllActive();
+        } else {
+            LOG.info("Unautorize user tried to access system");
+            return UnAuthorizeUser();
+        }
+    }
 
 }

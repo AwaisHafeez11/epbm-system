@@ -2,22 +2,20 @@ package com.app.epbmsystem.service;
 
 import com.app.epbmsystem.model.Forms.Disease;
 import com.app.epbmsystem.repository.DiseaseRepository;
-import com.app.epbmsystem.util.DateTime;
+import com.app.epbmsystem.util.SqlDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class DiseaseService {
     final DiseaseRepository diseaseRepository;
-    Disease disease;
+
     private static final Logger LOG = LogManager.getLogger(DiseaseService.class);
 
     public DiseaseService(DiseaseRepository diseaseRepository) {
@@ -28,19 +26,22 @@ public class DiseaseService {
      * List of all active and inactive Diseases return
      * @return
      */
-    public ResponseEntity<Object> listAllDisease(){   // List of all residentialForm
+    public ResponseEntity<Object> listAllDisease(){
         try {
             List<Disease> diseaseList= diseaseRepository.findAll();
             if (diseaseList.isEmpty())
             {
+                LOG.info("No record in disease Table");
                 return new ResponseEntity<>("No disease exists in the database", HttpStatus.NOT_FOUND);
             }
             else
             {
+                LOG.info("Returning a list of disease via listAllDisease Method at diseaseService class");
                 return new ResponseEntity<>(diseaseList, HttpStatus.OK);
             }
         }
         catch (Exception e){
+            LOG.info("Exception throws by method listAllDisease at diseaseService class ");
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -59,20 +60,26 @@ public class DiseaseService {
                 else
                 {
                     existingDisease.get().setActive(true);
+                    existingDisease.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
+                    existingDisease.get().setCreatedDate(SqlDate.getDateInSqlFormat());
                     diseaseRepository.save(existingDisease.get());
                     return new ResponseEntity<>(" added inactive disease successfully",HttpStatus.OK);
                 }
             }
             else
             {
-                disease.setCreatedDate(DateTime.getDateTime());
+                disease.setCreatedDate(SqlDate.getDateInSqlFormat());
+                disease.setUpdatedDate(SqlDate.getDateInSqlFormat());
+                disease.setActive(true);
                 diseaseRepository.save(disease);
+                LOG.info("adding disease into its table");
                 return new ResponseEntity<>("disease Successfully added",HttpStatus.OK);
             }
 
         }
         catch (Exception e)
         {
+            LOG.info("Exception throws by SaveDisease method  ");
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -86,7 +93,7 @@ public class DiseaseService {
         try{
             Long id = disease.getId();
             if (diseaseRepository.existsById(id)) {
-                disease.setUpdatedDate(DateTime.getDateTime());
+                disease.setUpdatedDate(SqlDate.getDateInSqlFormat());
                 diseaseRepository.save(disease);
                 return new ResponseEntity<>("Disease updated thank you", HttpStatus.OK);
             } else {
@@ -95,6 +102,7 @@ public class DiseaseService {
         }
         catch (Exception e)
         {
+            LOG.info("Exception throws by UpdateDisease method");
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -109,10 +117,10 @@ public class DiseaseService {
             Optional<Disease> existingDisease= diseaseRepository.findById(id);
             if (existingDisease.isPresent())
             {
-                existingDisease.get().setUpdatedDate(DateTime.getDateTime());
+                existingDisease.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
                 existingDisease.get().setActive(false);
                 diseaseRepository.save(existingDisease.get());
-                return new ResponseEntity<>(" disease has been Deleted", HttpStatus.OK);
+                return new ResponseEntity<>(" disease has been Deleted/Inactivated", HttpStatus.OK);
             }
             else
             {
@@ -147,7 +155,7 @@ public class DiseaseService {
      * display list of all active diseases
      * @return
      */
-    public ResponseEntity<Object> listAllActiveUsers() {
+    public ResponseEntity<Object> listAllActivediseases() {
         try {
             List<Disease> diseaseList = diseaseRepository.findAllByActive(true);
             if (diseaseList.isEmpty()) {
@@ -174,7 +182,7 @@ public class DiseaseService {
                 return new ResponseEntity<>(diseaseList, HttpStatus.OK);
             }
         } catch (Exception e) {
-            LOG.info("Exception"+ e.getMessage());
+            LOG.info("Exception throws by listAllInactiveDiseases at diseaseService  "+ e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

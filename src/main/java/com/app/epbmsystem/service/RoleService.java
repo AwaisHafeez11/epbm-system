@@ -180,7 +180,7 @@ public class RoleService {
      * this methods displays list of all active roles
      * @return
      */
-    public ResponseEntity<Object> listAllActiveRoles() {
+    public ResponseEntity<Object> listOfActiveRoles() {
         try
         {
             List<Role> existingRoles = roleRepository.findAllByActive(true);
