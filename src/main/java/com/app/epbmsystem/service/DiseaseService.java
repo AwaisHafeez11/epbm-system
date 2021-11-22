@@ -2,6 +2,7 @@ package com.app.epbmsystem.service;
 
 import com.app.epbmsystem.model.Forms.Disease;
 import com.app.epbmsystem.repository.DiseaseRepository;
+import com.app.epbmsystem.util.ResponseHandler;
 import com.app.epbmsystem.util.SqlDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,23 +28,23 @@ public class DiseaseService {
      * List of all active and inactive Diseases return
      * @return
      */
-    public ResponseEntity<Object> listAllDisease(){
+    public ResponseEntity<Object> listAllDisease() throws ParseException {
         try {
             List<Disease> diseaseList= diseaseRepository.findAll();
             if (diseaseList.isEmpty())
             {
                 LOG.info("No record in disease Table");
-                return new ResponseEntity<>("No disease exists in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NO_CONTENT,true,"Data not Found", null );
             }
             else
             {
                 LOG.info("Returning a list of disease via listAllDisease Method at diseaseService class");
-                return new ResponseEntity<>(diseaseList, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of diseases",diseaseList);
             }
         }
         catch (Exception e){
             LOG.info("Exception throws by method listAllDisease at diseaseService class ");
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -51,7 +53,7 @@ public class DiseaseService {
      * @param disease
      * @return
      */
-    public ResponseEntity<Object> saveDisease(Disease disease) {
+    public ResponseEntity<Object> saveDisease(Disease disease) throws ParseException {
         try{
             Optional<Disease> existingDisease= diseaseRepository.findDiseaseByName(disease.getName());
             if(existingDisease.isPresent())
@@ -63,7 +65,7 @@ public class DiseaseService {
                     existingDisease.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
                     existingDisease.get().setCreatedDate(SqlDate.getDateInSqlFormat());
                     diseaseRepository.save(existingDisease.get());
-                    return new ResponseEntity<>(" added inactive disease successfully",HttpStatus.OK);
+                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"added inactive disease successfully",null);
                 }
             }
             else
@@ -73,14 +75,13 @@ public class DiseaseService {
                 disease.setActive(true);
                 diseaseRepository.save(disease);
                 LOG.info("adding disease into its table");
-                return new ResponseEntity<>("disease Successfully added",HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"disease Successfully added",null);
             }
-
         }
         catch (Exception e)
         {
             LOG.info("Exception throws by SaveDisease method  ");
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -89,21 +90,21 @@ public class DiseaseService {
      * @param disease
      * @return
      */
-    public ResponseEntity<Object> updateDisease(Disease disease){                  // Update user
+    public ResponseEntity<Object> updateDisease(Disease disease) throws ParseException {                  // Update user
         try{
             Long id = disease.getId();
             if (diseaseRepository.existsById(id)) {
                 disease.setUpdatedDate(SqlDate.getDateInSqlFormat());
                 diseaseRepository.save(disease);
-                return new ResponseEntity<>("Disease updated thank you", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Disease updated thank you",null);
             } else {
-                return new ResponseEntity<>("Disease not exist", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"Disease not exist",null);
             }
         }
         catch (Exception e)
         {
             LOG.info("Exception throws by UpdateDisease method");
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -112,7 +113,7 @@ public class DiseaseService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> deleteDisease(Long id){
+    public ResponseEntity<Object> deleteDisease(Long id) throws ParseException {
         try{
             Optional<Disease> existingDisease= diseaseRepository.findById(id);
             if (existingDisease.isPresent())
@@ -120,17 +121,17 @@ public class DiseaseService {
                 existingDisease.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
                 existingDisease.get().setActive(false);
                 diseaseRepository.save(existingDisease.get());
-                return new ResponseEntity<>(" disease has been Deleted/Inactivated", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"disease has been Deleted/Inactivated",null);
             }
             else
             {
-                return new ResponseEntity<>("disease Not exists Please enter Valid ID", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"disease Not exists Please enter Valid ID",null);
             }
         }
         catch (Exception e)
         {
             LOG.info("Exception: " + e.getMessage());
-            return new ResponseEntity<>("disease deleted", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -139,33 +140,39 @@ public class DiseaseService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> getDisease(Long id){
+    public ResponseEntity<Object> getDisease(Long id) throws ParseException {
         try{
             Optional<Disease> diseaseList = diseaseRepository.findById(id);
             if (diseaseList.isPresent())
-            {return new ResponseEntity<>(diseaseList, HttpStatus.FOUND); }
+            {
+            return ResponseHandler.generateResponse(HttpStatus.FOUND,false,"",diseaseList);
+            }
             else
-            {return new ResponseEntity<>(diseaseList, HttpStatus.NOT_FOUND); }
+            {
+            return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"",null);
+            }
         }
         catch (Exception exception)
-        {return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
+        {
+            LOG.info("Exception: "+exception.getMessage());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+exception.getMessage(),null); }
     }
 
     /**
      * display list of all active diseases
      * @return
      */
-    public ResponseEntity<Object> listAllActivediseases() {
+    public ResponseEntity<Object> listAllActivediseases() throws ParseException {
         try {
             List<Disease> diseaseList = diseaseRepository.findAllByActive(true);
             if (diseaseList.isEmpty()) {
-                return new ResponseEntity<>("There are no Disease in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no Disease in the database",null);
             } else {
-                return new ResponseEntity<>(diseaseList, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of active diseases",diseaseList);
             }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+ e.getMessage(),null);
         }
     }
 
@@ -173,21 +180,18 @@ public class DiseaseService {
      * display list of all inactive diseases
      * @return
      */
-    public ResponseEntity<Object> listAllInactiveDiseases(){
+    public ResponseEntity<Object> listAllInactiveDiseases() throws ParseException {
         try {
             List<Disease> diseaseList = diseaseRepository.findAllByActive(false);
             if (diseaseList.isEmpty()) {
-                return new ResponseEntity<>("There are no Disease in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no Disease in the database",null);
             } else {
-                return new ResponseEntity<>(diseaseList, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of inactive",diseaseList);
             }
         } catch (Exception e) {
             LOG.info("Exception throws by listAllInactiveDiseases at diseaseService  "+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
-
-
-
     }
 
 }

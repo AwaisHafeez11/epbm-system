@@ -4,6 +4,7 @@ import com.app.epbmsystem.model.Forms.EducationalForm;
 import com.app.epbmsystem.model.Forms.MedicalForm;
 import com.app.epbmsystem.model.Forms.ResidentialForm;
 import com.app.epbmsystem.repository.ResidentialRepository;
+import com.app.epbmsystem.util.ResponseHandler;
 import com.app.epbmsystem.util.SqlDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
@@ -32,23 +34,23 @@ public class ResidentialService {
      * this method returns List of all existing residential application
      * @return
      */
-    public ResponseEntity<Object> listAllResidentialFroms(){
+    public ResponseEntity<Object> listAllResidentialFroms() throws ParseException {
         try {
             List<ResidentialForm> residentialFormList= residentialRepository.findAll();
             if (residentialFormList.isEmpty())
             {
-                LOG.info("there is no record in the database of residential applications");
-                return new ResponseEntity<>("No residentialForm exists in the database", HttpStatus.NOT_FOUND);
+                LOG.info("no record of residential applications");
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"No residentialForm exists in the database",null);
             }
             else
             {
-                LOG.info("Returning a list of existing residential applications");
-                return new ResponseEntity<>(residentialFormList, HttpStatus.OK);
+                LOG.info("");
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Returning a list of existing residential applications",null);
             }
         }
         catch (Exception e){
-            LOG.info("Exception throws by method listAllResidentialFroms in service class  ");
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            LOG.info("Exception:  " +e.getMessage());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -57,7 +59,7 @@ public class ResidentialService {
      * @param residentialForm
      * @return
      */
-    public ResponseEntity<Object> saveResidentialForm(ResidentialForm residentialForm) {
+    public ResponseEntity<Object> saveResidentialForm(ResidentialForm residentialForm) throws ParseException {
        try {
            residentialForm.setActive(true);
            residentialForm.setCreatedDate(SqlDate.getDateInSqlFormat());
@@ -65,12 +67,12 @@ public class ResidentialService {
            residentialForm.setApplicationStatus("Submitted");
            residentialForm.setRemarks("No remarks");
            residentialRepository.save(residentialForm);
-           return new ResponseEntity<>("residential Application Added /n Thank you for adding   ", HttpStatus.OK);
+           return ResponseHandler.generateResponse(HttpStatus.OK,false,"added thank you",null);
        }
        catch (Exception e)
        {
            LOG.info("Exception throws by method saveResidentialForm in service class ");
-           return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+           return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
        }
     }
 
@@ -79,7 +81,7 @@ public class ResidentialService {
      * @param residentialForm
      * @return
      */
-    public ResponseEntity<Object> updateResidentialForm(ResidentialForm residentialForm){                  // Update user
+    public ResponseEntity<Object> updateResidentialForm(ResidentialForm residentialForm) throws ParseException {                  // Update user
         try{
             Long id = residentialForm.getId();
             Optional<ResidentialForm> existingForm= residentialRepository.findById(id);
@@ -87,16 +89,16 @@ public class ResidentialService {
                 LOG.info("residentialform is present by its id ");
                 existingForm.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
                 residentialRepository.save(residentialForm);
-                return new ResponseEntity<>("residentialForm updated thank you", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"residentialForm updated ",null);
             } else {
                 LOG.info("No ResidentialFrom found for the id: "+id);
-                return new ResponseEntity<>("residentialForm not exist", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"residentialForm not exist",null);
             }
         }
         catch (Exception e)
         {
-            LOG.info("");
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            LOG.info("Exception: "+e.getMessage());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -105,22 +107,22 @@ public class ResidentialService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> deleteResidentialForm(Long id){
+    public ResponseEntity<Object> deleteResidentialForm(Long id) throws ParseException {
         try{
             Optional<ResidentialForm> existingForm= residentialRepository.findById(id);
             if (existingForm.isPresent()) {
                 LOG.info("Inactivating residential applications ");
                 existingForm.get().setActive(false);
                 residentialRepository.save(existingForm.get());
-                return new ResponseEntity<>(" residentialForm has been Deleted", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Form has been Deleted",null);
             } else {
                 LOG.info("Application do not exists, Please Enter valid ID");
-                return new ResponseEntity<>("residentialForm Not exists Please enter Valid ID", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Form Not exists Please enter Valid ID",null);
             }
         }
         catch (Exception e){
             LOG.info("Exception: " + e.getMessage());
-            return new ResponseEntity<>("Exception", HttpStatus.BAD_REQUEST);}
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null); }
     }
 
     /**
@@ -128,39 +130,40 @@ public class ResidentialService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> getResidentialForm(Long id){
+    public ResponseEntity<Object> getResidentialForm(Long id) throws ParseException {
         try{
             Optional<ResidentialForm> residentialForm = residentialRepository.findById(id);
             if (residentialForm.isPresent())
             {
                 LOG.info("Residential application returns");
-                return new ResponseEntity<>(residentialForm, HttpStatus.FOUND); }
+            return ResponseHandler.generateResponse(HttpStatus.FOUND,false,"Form exists by id: "+id,null);}
             else
-            {return new ResponseEntity<>(residentialForm, HttpStatus.NOT_FOUND); }
+            {
+            return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"forms do not exists by id: "+id,null);}
         }
         catch (Exception exception)
         {
             LOG.info("Exception throws by method getResidentialForm  ");
-            return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+exception.getMessage(),null);
+            }
     }
 
     /**
      * display list of all active Residential applications
      * @return
      */
-    public ResponseEntity<Object> listAllActive() {
+    public ResponseEntity<Object> listAllActive() throws ParseException {
         try {
             List<ResidentialForm> existingForms = residentialRepository.findAllByActive(true);
             if (existingForms.isEmpty()) {
                 LOG.info("Application exists in the database");
-                return new ResponseEntity<>("There are no Residential application in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"forms not found. ",null);
             } else {
                 LOG.info("Application does not exist in the database");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
-            }
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Exception",null);            }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -168,19 +171,20 @@ public class ResidentialService {
      * display list of all inactive Residential applications
      * @return
      */
-    public ResponseEntity<Object> listAllInactive(){
+    public ResponseEntity<Object> listAllInactive() throws ParseException {
         try {
             List<ResidentialForm> existingForms = residentialRepository.findAllByActive(false);
             if (existingForms.isEmpty()) {
                 LOG.info("Application does not exist in the database");
-                return new ResponseEntity<>("There are no Residential applications in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Forms not exists",null);
             } else {
                 LOG.info("Application exists in the database. Returning it to the controller");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of Inactive forms",existingForms);
             }
         } catch (Exception e) {
             LOG.info("Exception throws by listAllInactive Residential applications at medicalService  "+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exceptions: "+e.getMessage(),null);
+
         }
 
 
@@ -192,20 +196,19 @@ public class ResidentialService {
      * @param date
      * @return
      */
-    public ResponseEntity<Object> searchByDate(Date date) {
+    public ResponseEntity<Object> searchByDate(Date date) throws ParseException {
         try {
             LOG.info("Checking Weather data is present or not");
             List<ResidentialForm> existingForms = residentialRepository.findByCreatedDate(date);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found for the entered date in database",null);
             } else {
                 LOG.info("List of Residential application: Sorted by date ");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of Residential application: Sorted by date",existingForms);
             }
         } catch (Exception e) {
             LOG.info("error in searchbydate in class MedicalService :"+e.getMessage() + e.getCause());
-
-            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -214,20 +217,21 @@ public class ResidentialService {
      * @param date
      * @return
      */
-    public ResponseEntity<Object> searchByStartDate(Date date) {
+    public ResponseEntity<Object> searchByStartDate(Date date) throws ParseException {
         try {
             LOG.info("Checking Weather data is present or not");
             List<ResidentialForm> existingForms = residentialRepository.findByStartDate(date);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found for the entered date in database",null);
             } else {
                 LOG.info("List of residential application: Sorted by date ");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of residential application: Sorted by start date",existingForms);
             }
         } catch (Exception e) {
             LOG.info("error in search by Start date in class residentialService :"+e.getMessage() + e.getCause());
 
-            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -237,19 +241,20 @@ public class ResidentialService {
      * @param endDate
      * @return
      */
-    public ResponseEntity<Object> searchByStartDateAndEndDate(Date startDate,Date endDate) {
+    public ResponseEntity<Object> searchByStartDateAndEndDate(Date startDate,Date endDate) throws ParseException {
         try {
             LOG.info("Checking Weather data is present or not between two dates");
             List<ResidentialForm> existingForms =residentialRepository.findByCreatedDateBetweenOrderByUpdatedDateAsc(startDate,endDate);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found for the entered date in database",null);
             } else {
                 LOG.info("List of Residential application: Sorted by date ");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of Residential application: Sorted by start to end date",existingForms);
             }
         } catch (Exception e) {
             LOG.info("Method throws exception :"+e.getMessage() + e.getCause());
-            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
+
         }
     }
 
@@ -258,18 +263,19 @@ public class ResidentialService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> ListOfUserResidentialForms(Long id){
+    public ResponseEntity<Object> ListOfUserResidentialForms(Long id) throws ParseException {
         try {
             List<ResidentialForm> existingForm = residentialRepository.findResidentialFormsByUserId(id);
             if (existingForm.isEmpty()) {
-                return new ResponseEntity<>("There are no application forms for the entered user ID", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no application forms for the entered user ID",null);
             } else {
-                return new ResponseEntity<>(existingForm, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of Residential Forms",existingForm);
             }
         }
         catch (Exception e)
         {
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+            LOG.info("Exception: "+e.getMessage()+ "Cause"+e.getCause());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -278,25 +284,24 @@ public class ResidentialService {
      * @param applicationStatus
      * @return
      */
-    public ResponseEntity<Object> ListOfResidentialFormsByApplicationStatus(String applicationStatus)
-    {
+    public ResponseEntity<Object> ListOfResidentialFormsByApplicationStatus(String applicationStatus) throws ParseException {
         try{
             List<ResidentialForm> existingForms= residentialRepository.findResidentialFormsByApplicationStatus(applicationStatus);
             if (existingForms.isEmpty())
             {
                 LOG.info("There is no "+applicationStatus+" forms exists",HttpStatus.NO_CONTENT);
-                return new ResponseEntity<>("There is no In review forms exists",HttpStatus.NO_CONTENT);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found",null);
             }
             else
             {
                 LOG.info("Status: In review Forms exists");
-                return new ResponseEntity<>("Status: "+applicationStatus+" forms exists" + existingForms,HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of forms by status",existingForms);
             }
         }
         catch (Exception e)
         {
             LOG.info("Exception throws by method(ResidentialFormsByApplicationStatus) "+e.getMessage());
-            return new ResponseEntity<>("Exception"+e.getMessage(),HttpStatus.BAD_REQUEST);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception"+e.getMessage(),null);
         }
     }
 

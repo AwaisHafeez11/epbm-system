@@ -3,14 +3,19 @@ package com.app.epbmsystem.service;
 import com.app.epbmsystem.model.Entity.Category;
 import com.app.epbmsystem.repository.CategoryRepository;
 import com.app.epbmsystem.util.DateTime;
+import com.app.epbmsystem.util.ResponseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.xml.ws.Response;
 
 @Service
 public class CategoryService {
@@ -32,21 +37,22 @@ public class CategoryService {
      * List of all active and inactive categories
      * @return
      */
-    public ResponseEntity<Object> listAllCategories(){
+    public ResponseEntity<Object> listAllCategories() throws ParseException {
         try {
 
             List<Category> categoryList= categoryRepository.findAll();
             if (categoryList.isEmpty())
             {
-                return new ResponseEntity<>("No Category exists in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"No Category exists in the databas",null);
             }
             else
             {
-                return new ResponseEntity<>(categoryList, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of all categories",categoryList);
             }
         }
         catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            LOG.info("Exception: "+ e.getMessage());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -55,33 +61,29 @@ public class CategoryService {
      * @param category
      * @return
      */
-    public ResponseEntity<Object> saveCategory(Category category) {
-        try{
-            Optional<Category> existingCategory= categoryRepository.findCategoryByName(category.getName());
-                if(existingCategory.isPresent())
-                {
-                    if(existingCategory.get().isActive())
-                    {
-                        return new ResponseEntity<>("Category Already exists", HttpStatus.BAD_REQUEST);
-                    }
-                    else
-                    {
-                        category.setActive(true);
-                        category.setUpdatedDate(DateTime.getDateTime());
-                        categoryRepository.save(category);
-                        return new ResponseEntity<>("Category added", HttpStatus.OK);
-                    }
+    public ResponseEntity<Object> saveCategory(Category category) throws ParseException {
+        try {
+            Optional<Category> existingCategory = categoryRepository.findCategoryByName(category.getName());
+            if (existingCategory.isPresent()) {
+                if (existingCategory.get().isActive()) {
+                    return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST, true, "Category Already exists", null);
+                } else {
+                    category.setActive(true);
+                    category.setUpdatedDate(DateTime.getDateTime());
+                    categoryRepository.save(category);
+                    return ResponseHandler.generateResponse(HttpStatus.OK, false, "Category activated", null);
                 }
-                else
-                {
+            } else {
                 category.setCreatedDate(DateTime.getDateTime());
                 category.setUpdatedDate(DateTime.getDateTime());
                 categoryRepository.save(category);
-                return new ResponseEntity<>("Category added",HttpStatus.OK);
-                }
-
+                return ResponseHandler.generateResponse(HttpStatus.OK, false, "Category added", null);
             }
-        catch (Exception e){return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
+
+        } catch (Exception e) {
+            LOG.info("Exception: " + e.getMessage());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, true, "Exception: " + e.getMessage(), null);
+        }
     }
 
     /**
@@ -89,21 +91,22 @@ public class CategoryService {
      * @param category
      * @return
      */
-    public ResponseEntity<Object> updateCategory(Category category){                  // Update user
+    public ResponseEntity<Object> updateCategory(Category category) throws ParseException {                  // Update user
         try{
             Long id = category.getId();
             if (categoryRepository.existsById(id)) {
 
                 category.setUpdatedDate(DateTime.getDateTime());
                 categoryRepository.save(category);
-                return new ResponseEntity<>("Category updated thank you", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Category updated thank you",null);
             } else {
-                return new ResponseEntity<>("Category not exist", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"Category not exist",null);
             }
         }
         catch (Exception e)
         {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            LOG.info("Exception: "+ e.getMessage());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -112,21 +115,21 @@ public class CategoryService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> deleteCategory(Long id){                   //Delete user
+    public ResponseEntity<Object> deleteCategory(Long id) throws ParseException {                   //Delete user
         try {
             Optional<Category> category= categoryRepository.findById(id);
             if (category.isPresent()) {
                 category.get().setActive(false);
                 category.get().setUpdatedDate(DateTime.getDateTime());
                 categoryRepository.save(category.get());
-                return new ResponseEntity<>(" Category has been Deleted", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Category has been Deleted",null);
             } else {
-                return new ResponseEntity<>("Category Not exists Please enter Valid ID", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Category Not exists Please enter Valid ID",null);
             }
         }
         catch (Exception e){
-            LOG.info("Exception: " + e.getMessage());
-            return new ResponseEntity<>("Category deleted", HttpStatus.BAD_REQUEST);}
+        LOG.info("Exception: " + e.getMessage());
+        return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);}
     }
 
     /**
@@ -134,50 +137,54 @@ public class CategoryService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> getCategory(Long id){
+    public ResponseEntity<Object> getCategory(Long id) throws ParseException {
         try{
             Optional<Category> category = categoryRepository.findById(id);
             if (category.isPresent())
-            {return new ResponseEntity<>(category, HttpStatus.FOUND); }
+            {
+            return ResponseHandler.generateResponse(HttpStatus.FOUND,false,"Category exists by id: "+id,category);}
             else
-            {return new ResponseEntity<>(category, HttpStatus.NOT_FOUND); }
+            {
+            return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,false,"Category not found for the entered id: "+id,category);}
         }
         catch (Exception exception)
-        {return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
+        {
+        return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+exception.getMessage(),null);
+        }
     }
 
     /**
      * List of all Active categories will display if exists
      * @return
      */
-    public ResponseEntity<Object> listAllActiveCategories() {
+    public ResponseEntity<Object> listAllActiveCategories() throws ParseException {
         try {
             List<Category> categoryList = categoryRepository.findAllByActive(true);
             if (categoryList.isEmpty()) {
-                return new ResponseEntity<>("There are no active Category in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no active Category in the database",null);
             } else {
-                return new ResponseEntity<>(categoryList, HttpStatus.OK);
+                return  ResponseHandler.generateResponse(HttpStatus.FOUND,false,"List of active categories",categoryList);
             }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
     /**
      * List of all inactive categories will display if exists
      */
-    public ResponseEntity<Object> listAllInactiveCategories() {
+    public ResponseEntity<Object> listAllInactiveCategories() throws ParseException {
         try {
             List<Category> categoryList = categoryRepository.findAllByActive(false);
             if (categoryList.isEmpty()) {
-                return new ResponseEntity<>("There are no Inactive Category in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no Inactive Category in the database",null);
             } else {
-                return new ResponseEntity<>(categoryList, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of in active users",categoryList);
             }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 

@@ -3,12 +3,16 @@ package com.app.epbmsystem.controller.Entity;
 import com.app.epbmsystem.model.Entity.Category;
 
 import com.app.epbmsystem.service.CategoryService;
+import com.app.epbmsystem.util.ResponseHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.ResponseErrorHandler;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.text.ParseException;
 
 @EnableSwagger2
 @RestController
@@ -34,8 +38,14 @@ public class CategoryController {
         return new ResponseEntity<>("Kindly do the authorization first", HttpStatus.UNAUTHORIZED);
     }
 
+    /**
+     * returns list of all Categories
+     * @param token
+     * @return
+     * @throws ParseException
+     */
     @GetMapping("/list")
-    public ResponseEntity<Object> listOfCategories(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfCategories(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             return categoryService.listAllCategories();
         } else {
@@ -44,8 +54,14 @@ public class CategoryController {
         }
     }
 
+    /**
+     * Thid method will add category
+     * @param token
+     * @param category
+     * @return
+     */
     @PostMapping("/add")
-    public ResponseEntity<Object> add(@RequestHeader("Authorization") String token, @RequestBody Category category) {
+    public ResponseEntity<Object> add(@RequestHeader("Authorization") String token, @RequestBody Category category) throws ParseException {
         try{
             if (authorization(token))
             {
@@ -59,13 +75,20 @@ public class CategoryController {
         }
         catch (Exception e)
         {
-            LOG.info(e.getMessage());
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+            LOG.info("Exception: "+e.getMessage());
+            return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Exception: "+e.getMessage(),null);
         }
     }
 
+    /**
+     * returns a category by given id
+     * @param token
+     * @param id
+     * @return
+     * @throws ParseException
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getCategoryByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+    public ResponseEntity<Object> getCategoryByID(@RequestHeader("Authorization") String token, @PathVariable Long id) throws ParseException {
         if (authorization(token))
         {
             return categoryService.getCategory(id); //It will return the Response
@@ -77,8 +100,15 @@ public class CategoryController {
         }
     }
 
+    /**
+     * Updates an existing category
+     * @param token
+     * @param category
+     * @return
+     * @throws ParseException
+     */
     @PutMapping("/update")
-    public ResponseEntity<Object> UpdateCategory(@RequestHeader("Authorization") String token, @RequestBody Category category) {
+    public ResponseEntity<Object> UpdateCategory(@RequestHeader("Authorization") String token, @RequestBody Category category) throws ParseException {
         if (authorization(token))
         {
             return categoryService.updateCategory(category);
@@ -90,16 +120,21 @@ public class CategoryController {
         }
     }
 
-
+    /**
+     * this method delete inactive category by its id
+     * @param id
+     * @param token
+     * @return
+     */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Object> DeleteCategory(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> DeleteCategory(@PathVariable Long id, @RequestHeader("Authorization") String token) throws ParseException {
 
         if (authorization(token)) {
             try{
                 return categoryService.deleteCategory(id);
             }catch (Exception exception){
                 LOG.info("UnAuthorized User was trying to access the database");
-                return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+                return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: ",null);
             }
         }
         else
@@ -108,8 +143,14 @@ public class CategoryController {
         }
     }
 
+    /**
+     * this method delete inactive category by its id
+     * @param token
+     * @param id
+     * @return
+     */
     @DeleteMapping("/delete")
-    public ResponseEntity<Object> DeleteCategory(@RequestHeader("Authorization") String token, @RequestParam("delete") Long id) {
+    public ResponseEntity<Object> DeleteCategory(@RequestHeader("Authorization") String token, @RequestParam("delete") Long id) throws ParseException {
         if (authorization(token))
         {
             try
@@ -119,7 +160,7 @@ public class CategoryController {
             catch (Exception exception)
             {
                 LOG.info("Exception: "+exception.getMessage());
-                return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+                return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception:"+exception.getMessage(),null);
             }
         }
         else
@@ -128,5 +169,41 @@ public class CategoryController {
         }
     }
 
+    /**
+     * Returns a list of active categories
+     * @param token
+     * @return
+     * @throws ParseException
+     */
+    @GetMapping("/active")
+    public ResponseEntity<Object> ListOfActiveCategories(@RequestHeader("Authorizationn")String token) throws ParseException {
+        if (authorization(token))
+        {
 
+                return categoryService.listAllActiveCategories();
+        }
+        else
+        {
+            return UnAuthorizeUser();
+        }
+    }
+
+    /**
+     * Returns a list of inactive categories
+     * @param token
+     * @return
+     * @throws ParseException
+     */
+    @GetMapping("/inactive")
+    public ResponseEntity<Object> ListOfInactiveCategories(@RequestHeader("Authorizationn")String token) throws ParseException {
+        if (authorization(token))
+        {
+
+            return categoryService.listAllInactiveCategories();
+        }
+        else
+        {
+            return UnAuthorizeUser();
+        }
+    }
 }

@@ -1,10 +1,9 @@
 package com.app.epbmsystem.service;
 
-
-import com.app.epbmsystem.model.Forms.EducationalForm;
 import com.app.epbmsystem.model.Forms.FinancialForm;
-import com.app.epbmsystem.model.Forms.MedicalForm;
 import com.app.epbmsystem.repository.FinancialRepository;
+import com.app.epbmsystem.util.ResponseHandler;
+import com.app.epbmsystem.util.SqlDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
@@ -29,69 +29,112 @@ public class FinancialService {
     }
     private static final Logger LOG = LogManager.getLogger(FinancialService.class);
 
-    public ResponseEntity<Object> listAllFinancialFroms(){   // List of all financial applications
+    /**
+     * List of all financialForms
+     * @return
+     * @throws ParseException
+     */
+    public ResponseEntity<Object> listAllFinancialFroms() throws ParseException {   // List of all financial applications
         try {
                 List<FinancialForm> financialFormList= financialRepository.findAll();
                 if (financialFormList.isEmpty())
                 {
-                    return new ResponseEntity<>("No FinancialForm exists in the database", HttpStatus.NOT_FOUND);
+                    return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"No FinancialForm exists in the database",null);
                 }
                 else
                 {
-                    return new ResponseEntity<>(financialFormList, HttpStatus.OK);
+                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of forms",financialFormList);
                 }
         }
         catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
-    public ResponseEntity<Object> saveFinancialForm(FinancialForm financialForm) {
+    /**
+     * Save a form into the database
+     * @param financialForm
+     * @return
+     * @throws ParseException
+     */
+    public ResponseEntity<Object> saveFinancialForm(FinancialForm financialForm) throws ParseException {
+            financialForm.setCreatedDate(SqlDate.getDateInSqlFormat());
+            financialForm.setUpdatedDate(SqlDate.getDateInSqlFormat());
+            financialForm.setApplicationStatus("Inreview");
+            financialForm.setActive(true);
             financialRepository.save(financialForm);
-            return new ResponseEntity<>("Financial Application Added /n Thank you for adding   ",HttpStatus.OK);
+            return ResponseHandler.generateResponse(HttpStatus.OK,false,"Form Application Added",null);
     }
 
-    public ResponseEntity<Object> updateFinancialForm(FinancialForm financialForm){                  // Update user
+    /**
+     * updetes a form by object
+     * @param financialForm
+     * @return
+     * @throws ParseException
+     */
+    public ResponseEntity<Object> updateFinancialForm(FinancialForm financialForm) throws ParseException {                  // Update user
         try{
                 Long id = financialForm.getId();
                 DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
                 if (financialRepository.existsById(id)) {
                     financialRepository.save(financialForm);
-                    return new ResponseEntity<>("financialForm updated thank you", HttpStatus.OK);
+                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"financialForm updated thank you",null);
                 } else {
-                    return new ResponseEntity<>("financialForm not exist", HttpStatus.NOT_FOUND);
+                    return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"financialForm not exist",null);
                 }
         }
         catch (Exception e)
             {
-                return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+                LOG.info("Exception: "+e.getMessage()+ e.getCause());
+                return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getCause()+"  Cause"+e.getMessage(),null);
+
             }
     }
 
-    public ResponseEntity<Object> deleteFinancialForm(Long id){                   //Financialform deleted
+    /**
+     * Inactive a form by id
+     * @param id
+     * @return
+     * @throws ParseException
+     */
+    public ResponseEntity<Object> deleteFinancialForm(Long id) throws ParseException {                   //Financialform deleted
         try{
-            if (financialRepository.existsById(id)) {
-                financialRepository.delete(financialForm);
-                return new ResponseEntity<>(" financialForm has been Deleted", HttpStatus.OK);
+            Optional<FinancialForm> existingForm= financialRepository.findById(id);
+            if (existingForm.isPresent()) {
+                existingForm.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
+                existingForm.get().setActive(false);
+                financialRepository.save(financialForm);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"financialForm has been deactivated",null);
             } else {
-                return new ResponseEntity<>("financialForm Not exists Please enter Valid ID", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not exists Please enter Valid ID",null);
             }
         }
         catch (Exception e){
-            LOG.info("Exception: " + e.getMessage());
-            return new ResponseEntity<>("financialForm deleted", HttpStatus.BAD_REQUEST);}
+            LOG.info("Exception: " + e.getMessage()+ "  Cause"+e.getCause());
+        return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage()+ e.getCause(),null);}
     }
 
-    public ResponseEntity<Object> getFinancialForm(Long id){
+    /**
+     * Returns a form by id
+     * @param id
+     * @return
+     * @throws ParseException
+     */
+    public ResponseEntity<Object> getFinancialForm(Long id) throws ParseException {
         try{
             Optional<FinancialForm> financialForm = financialRepository.findById(id);
             if (financialForm.isPresent())
-            {return new ResponseEntity<>(financialForm, HttpStatus.FOUND); }
+            {
+            return ResponseHandler.generateResponse(HttpStatus.OK,false,"form by id: "+id,financialForm);}
             else
-            {return new ResponseEntity<>(financialForm, HttpStatus.NOT_FOUND); }
+            {
+            return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"form not found",null);}
         }
         catch (Exception exception)
-        {return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
+        {
+            LOG.info("Exception: "+exception.getMessage()+" cause: "+exception.getCause());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+exception.getMessage(),null);
+       }
     }
 
     /**
@@ -99,20 +142,19 @@ public class FinancialService {
      * @param date
      * @return
      */
-    public ResponseEntity<Object> searchByDate(Date date) {
+    public ResponseEntity<Object> searchByDate(Date date) throws ParseException {
         try {
             LOG.info("Checking Weather data is present or not");
             List<FinancialForm> existingForms = financialRepository.findByCreatedDate(date);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found for the entered date in database",null);
             } else {
                 LOG.info("List of financial application: Sorted by date ");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of financial application: Sorted by date ",existingForms);
             }
         } catch (Exception e) {
             LOG.info("error in searchbydate in class financialService :"+e.getMessage() + e.getCause());
-
-            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -121,20 +163,20 @@ public class FinancialService {
      * @param date
      * @return
      */
-    public ResponseEntity<Object> searchByStartDate(Date date) {
+    public ResponseEntity<Object> searchByStartDate(Date date) throws ParseException {
         try {
             LOG.info("Checking Weather data is present or not");
             List<FinancialForm> existingForms = financialRepository.findByStartDate(date);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found for the entered date in database",null);
             } else {
                 LOG.info("List of financial application: Sorted by date ");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of financial application: Sorted by start date",null);
             }
         } catch (Exception e) {
             LOG.info("error in searchbydate in class financialService :"+e.getMessage() + e.getCause());
-
-            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage()+"  Cause: "+e.getCause(),null);
         }
     }
 
@@ -144,19 +186,19 @@ public class FinancialService {
      * @param endDate
      * @return
      */
-    public ResponseEntity<Object> searchByStartDateAndEndDate(Date startDate,Date endDate) {
+    public ResponseEntity<Object> searchByStartDateAndEndDate(Date startDate,Date endDate) throws ParseException {
         try {
             LOG.info("Checking Weather data is present or not between two dates");
             List<FinancialForm> existingForms =financialRepository.findByCreatedDateBetweenOrderByUpdatedDateAsc(startDate,endDate);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found for the entered date in database",null);
             } else {
                 LOG.info("List of financial application: Sorted by date ");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Sorted by start to end date",existingForms);
             }
         } catch (Exception e) {
             LOG.info("error in searchbydate in class financialService :"+e.getMessage() + e.getCause());
-            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception",null);
         }
     }
 
@@ -164,17 +206,18 @@ public class FinancialService {
      * display list of all active financial applications
      * @return
      */
-    public ResponseEntity<Object> listAllActive() {
+    public ResponseEntity<Object> listAllActive() throws ParseException {
         try {
             List<FinancialForm> existingForms = financialRepository.findByActive(true);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("There are no financial application in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no financial application in the database",null);
             } else {
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of active forms",existingForms);
             }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
+
         }
     }
 
@@ -182,20 +225,18 @@ public class FinancialService {
      * display list of all inactive Medical applications
      * @return
      */
-    public ResponseEntity<Object> listAllInactive(){
+    public ResponseEntity<Object> listAllInactive() throws ParseException {
         try {
             List<FinancialForm> existingForms = financialRepository.findByActive(false);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("There are no financial applications in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no financial applications in the database",null);
             } else {
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of Inactive forms",existingForms);
             }
         } catch (Exception e) {
             LOG.info("Exception throws by listAllInactive financial applications at financialService  "+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
-
-
 
     }
 
@@ -204,18 +245,20 @@ public class FinancialService {
      * @param userid
      * @return
      */
-    public ResponseEntity<Object> findUserFinancialForms(Long userid) {
+    public ResponseEntity<Object> findUserFinancialForms(Long userid) throws ParseException {
         try {
             List<FinancialForm> existingForm = financialRepository.findFinancialFormByUserId(userid);
             if (existingForm.isEmpty()) {
-                return new ResponseEntity<>("There are no application forms for the entered user ID", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no application forms for the entered user ID",null);
             } else {
-                return new ResponseEntity<>(existingForm, HttpStatus.OK);
+
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of users forms",existingForm);
             }
         }
         catch (Exception e)
         {
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+            LOG.info("Exception: "+e.getMessage()+"  Cause"+e.getCause());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 

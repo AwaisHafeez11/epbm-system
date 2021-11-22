@@ -73,15 +73,14 @@ public class User implements Serializable {
     /**
      * One user can have multiple roles, and one role can have multiple users
      */
-    @ManyToMany(targetEntity = Role.class,fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToMany(targetEntity = Role.class,fetch = FetchType.LAZY)
     private List<Role> roles = new ArrayList<>();
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-
     /**
      * One user can have one category, and one category can have multiple users
      */
-    @ManyToOne(targetEntity = Category.class,fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(targetEntity = Category.class,fetch = FetchType.LAZY)
     private Category category;
 
 }

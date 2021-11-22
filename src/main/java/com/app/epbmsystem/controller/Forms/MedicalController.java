@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.sql.Date;
+import java.text.ParseException;
 
 @EnableSwagger2
 @RestController
@@ -49,7 +50,7 @@ public class MedicalController {
      * @return
      */
     @GetMapping("/list")
-    public ResponseEntity<Object> listOfMedicalForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfMedicalForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             return medicalService.listAllMedicalFroms();
         } else {
@@ -86,7 +87,7 @@ public class MedicalController {
      * @return
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getMedicalFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+    public ResponseEntity<Object> getMedicalFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) throws ParseException {
         if (authorization(token)) {
             return medicalService.getMedicalForm(id);
         } else {
@@ -102,7 +103,7 @@ public class MedicalController {
      * @return
      */
     @PutMapping("/update")
-    public ResponseEntity<Object> UpdatePermission(@RequestHeader("Authorization") String token, @RequestBody MedicalForm medicalForm) {
+    public ResponseEntity<Object> UpdatePermission(@RequestHeader("Authorization") String token, @RequestBody MedicalForm medicalForm) throws ParseException {
         if (authorization(token)) {
             return medicalService.updateMedicalForm(medicalForm);
         } else {
@@ -230,7 +231,7 @@ public class MedicalController {
      * @return
      */
     @GetMapping("/list/Inactive")
-    public ResponseEntity<Object> listOfInActiveMedicalForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfInActiveMedicalForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             LOG.info("Listing all the Medical forms that are Inactive");
             return medicalService.listAllInactive();
@@ -245,7 +246,7 @@ public class MedicalController {
      * @return
      */
     @GetMapping("/list/active")
-    public ResponseEntity<Object> listOfActiveMedicalForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfActiveMedicalForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             LOG.info("Listing all the disease that are active");
             return medicalService.listAllActive();

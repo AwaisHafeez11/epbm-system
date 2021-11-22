@@ -2,20 +2,20 @@ package com.app.epbmsystem.service;
 
 import com.app.epbmsystem.repository.UserRepository;
 import com.app.epbmsystem.model.Entity.User;
-import com.app.epbmsystem.util.DateTime;
-import com.app.epbmsystem.util.EmailNotification;
-import com.app.epbmsystem.util.SmsNotification;
+import com.app.epbmsystem.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+//import org.springframework.security.core.userdetails.UserDetails;
+//import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.text.ParseException;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.validation.constraints.Null;
 
 @Service
 public class UserService {
@@ -26,7 +26,7 @@ public class UserService {
     final UserRepository userRepository;
     final EmailNotification emailNotification;
     final SmsNotification smsNotification;
-    private User user;
+
 
     /**
      * Autowiring through constructor
@@ -46,17 +46,18 @@ public class UserService {
      * @param password
      * @return
      */
-    public ResponseEntity<Object> loginUser(String email, String password) {
+    public ResponseEntity<Object> loginUser(String email, String password) throws ParseException {
         try {
             Optional<User> user = userRepository.findUserByEmailAndPassword(email, password);
             if (user.isPresent()) {
-                return new ResponseEntity<>("You are successfully logged in", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"user Logged in",null);
             } else {
-                return new ResponseEntity<>("You are entering wrong credentials", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"You are entering wrong credentials",user);
             }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception ",null);
+
         }
     }
 
@@ -67,27 +68,29 @@ public class UserService {
      * @param smsToken
      * @return
      */
-    public ResponseEntity<Object> AccountVerification(long id, String emailToken, String smsToken) {
+    public ResponseEntity<Object> AccountVerification(long id, String emailToken, String smsToken) throws ParseException {
         try {
             Optional<User> user = userRepository.findUserByIdAndEmailTokenAndSmsToken(id,emailToken,smsToken);
             Date verificationTime = DateTime.getDateTime();
             System.out.println(tokenExpireTime);
 
             if(verificationTime.after(tokenExpireTime)){
-                return new ResponseEntity<>("The token is expired", HttpStatus.BAD_REQUEST);
+                return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"The token is expired",null);
             }
             else{
                 if (user.isPresent()) {
                     user.get().setActive(true);
                     userRepository.save(user.get());
-                    return new ResponseEntity<>("User account has been verified, now you can login", HttpStatus.OK);
+                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"User account has been verified, now you can login",null);
                 } else {
-                    return new ResponseEntity<>("Your are entering wrong values for tokens", HttpStatus.BAD_REQUEST);
+                    return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"Your are entering wrong values for tokens",user);
                 }
             }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Your are entering wrong values for tokens"+ e.getMessage(),null);
+
+
         }
     }
 
@@ -96,16 +99,16 @@ public class UserService {
      * @param user
      * @return
      */
-    public ResponseEntity<Object> addUser(User user) {
+    public ResponseEntity<Object> addUser(User user) throws ParseException {
         try {
             Optional<User> existingUser = userRepository.findUserByEmail(user.getEmail());
             if (existingUser.isPresent()) {
                 if (existingUser.get().isActive()) {
-                    return new ResponseEntity<>("User already present", HttpStatus.BAD_REQUEST);
+                    return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"User already present",user);
                 } else {
                     existingUser.get().setActive(true);
                     userRepository.save(existingUser.get());
-                    return new ResponseEntity<>("Inactive User already exists. User activated successfully. Enjoy Bait ul Mall Services ", HttpStatus.OK);
+                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"Inactive User already exists. User activated successfully. Enjoy Bait ul Mall Services",existingUser);
                 }
             } else {
                 Random rnd = new Random(); //Generating a random number
@@ -120,13 +123,13 @@ public class UserService {
                 user.setActive(false); //the user is active in the start
                 user.setCreatedDate(DateTime.getDateTime());
                 userRepository.save(user);
-                return new ResponseEntity<>("User is successfully added", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"User is successfully added",user);
             }
         }
         catch (Exception e)
         {
             LOG.info("Exception" + e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,""+e.getMessage(),null);
         }
     }
 
@@ -135,22 +138,25 @@ public class UserService {
      * @param user
      * @return
      */
-    public ResponseEntity<Object> updateUser(User user) {
+    public ResponseEntity<Object> updateUser(User user) throws ParseException {
         try {
             Optional<User> existingUser = userRepository.findById(user.getId());
             if (existingUser.isPresent()) {
-                user.setUpdatedDate(DateTime.getDateTime());
+
+                user.setUpdatedDate(SqlDate.getDateInSqlFormat());
                 userRepository.save(user);
-                return new ResponseEntity<>("User has been successfully Updated", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"User has been successfully Updated",null);
             }
             else
             {
-                return new ResponseEntity<>("User not exists, Please update existing user", HttpStatus.NOT_FOUND);
+                LOG.info("The user you are trying to update doesn't exist. ");
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"User not exists, Please update existing user",null);
             }
         }
         catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>("User not Updated", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"User not Updated",null);
+
         }
     }
 
@@ -159,7 +165,7 @@ public class UserService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> deleteUser(Long id) {
+    public ResponseEntity<Object> deleteUser(Long id) throws ParseException {
         try {
             Optional<User> user = userRepository.findById(id);
             if (user.isPresent())
@@ -167,15 +173,15 @@ public class UserService {
                 user.get().setUpdatedDate(DateTime.getDateTime());
                 user.get().setActive(false);
                 userRepository.save(user.get());
-                return new ResponseEntity<>("User is successfully deleted", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"User is successfully deleted",null);
             }
             else
             {
-                return new ResponseEntity<>("There is no user against this id", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"There is no user against this id",user);
             }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>("This user doesn't exist in the database", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"This user doesn't exist in the database",null);
         }
     }
 
@@ -184,37 +190,39 @@ public class UserService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> getUser(Long id){
+    public ResponseEntity<Object> getUser(Long id) throws ParseException {
            try {
                Optional<User> user = userRepository.findById(id);
                if (user.isPresent())
-                    {return new ResponseEntity<>(user, HttpStatus.FOUND); }
+                    {return ResponseHandler.generateResponse(HttpStatus.OK,false,"User found",user);}
                else
-                    {return new ResponseEntity<>(user, HttpStatus.NOT_FOUND); }
+                    {return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"User not found", null);}
            }
            catch (Exception exception)
-                    {return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
+                    {return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception",null);}
        }
 
     /**
      *List of all active and Inactive users
      * @return
      */
-    public ResponseEntity<Object> listAllUsers(){
+    public ResponseEntity<Object> listAllUsers() throws ParseException {
         try {
 
             List<User> userList= userRepository.findAll();
             if (userList.isEmpty())
             {
-                return new ResponseEntity<>("No User exists in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"No User exists in the database",null);
             }
             else
             {
-                return new ResponseEntity<>(userList, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of All users",userList);
             }
         }
         catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            LOG.info("Exception throws "+ e.getMessage() );
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception"+e.getMessage(),null);
+
         }
     }
 
@@ -222,18 +230,17 @@ public class UserService {
      * List of all active users will display
      * @return
      */
-    public ResponseEntity<Object> listOfActiveUsers() {
+    public ResponseEntity<Object> listOfActiveUsers() throws ParseException {
         try {
             List<User> userList = userRepository.findAllByActive(true);
             if (userList.isEmpty()) {
-                return new ResponseEntity<>("There are no users in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no users in the database",null);
             } else {
-                return new ResponseEntity<>(userList, HttpStatus.OK);
-            }
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of active users",userList);            }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
+    }
     }
 
     /**
@@ -259,7 +266,7 @@ public class UserService {
      * @param email
      * @return
      */
-    public ResponseEntity<Object> resendVerificationToken(String email){
+    public ResponseEntity<Object> resendVerificationToken(String email) throws ParseException {
         try{
             Optional<User> user = userRepository.findUserByEmail(email);
             if(user.isPresent()){
@@ -273,15 +280,26 @@ public class UserService {
                 user.get().setSmsToken(smsToken + "");
                 tokenExpireTime = DateTime.getExpireTime();
                 userRepository.save(user.get());
-                return new ResponseEntity<>("Tokens are successfully resent to your email and phone number", HttpStatus.OK);
-            }
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Tokens are successfully resent to your email and phone number",null);
+        }
             else
                 {
-                return new ResponseEntity<>("User doesn't exist against this email", HttpStatus.BAD_REQUEST);
-            }
+                    return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"User doesn't exist against this email",null);
+                }
         }catch (Exception e) {
             LOG.info("Exception: "+ e.getMessage());
-            return new ResponseEntity<>("There is no user against this email", HttpStatus.NOT_FOUND);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception" + e.getMessage(),null);
+
         }
     }
+
+//    @Override
+//    public UserDetails loadUserByUsername(String firstName) throws UsernameNotFoundException {
+//        Optional<User> user = userRepository.findUserByFirstName(firstName);
+//        if (user.isPresent()) {
+//            return new org.springframework.security.core.userdetails.User(user.get().getFirstName(), user.get().getPassword(),new ArrayList<>());
+//        } else {
+//            throw new UsernameNotFoundException("User not found with username: " + firstName);
+//        }
+//    }
 }

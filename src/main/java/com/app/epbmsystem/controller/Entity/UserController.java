@@ -2,12 +2,15 @@ package com.app.epbmsystem.controller.Entity;
 
 import com.app.epbmsystem.model.Entity.User;
 import com.app.epbmsystem.service.UserService;
+import com.app.epbmsystem.util.ResponseHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+import java.text.ParseException;
 
 @EnableSwagger2
 @RestController
@@ -66,7 +69,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/list/active")
-    public ResponseEntity<Object> listOfActiveUsers(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfActiveUsers(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             LOG.info("Listing all the users that are active");
             return userService.listOfActiveUsers();
@@ -81,12 +84,14 @@ public class UserController {
      * @return
      */
     @PostMapping("/signup")
-    public ResponseEntity<Object> addUser(@RequestBody User user,@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> addUser(@RequestBody User user,@RequestHeader("Authorization") String token) throws ParseException {
         if(authorization(token))
         {LOG.info("Adding the user");
         return userService.addUser(user);}
         else
-        {return new ResponseEntity<>("Please Authorize first",HttpStatus.BAD_REQUEST);}
+        {
+        return ResponseHandler.generateResponse(HttpStatus.UNAUTHORIZED,true,"Please authorize first",null);
+        }
     }
 
     /**
@@ -97,7 +102,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/login")
-    public ResponseEntity<Object> login(@RequestHeader("Authorization") String token, @RequestParam String email, @RequestParam String password) {
+    public ResponseEntity<Object> login(@RequestHeader("Authorization") String token, @RequestParam String email, @RequestParam String password) throws ParseException {
         if (authorization(token)) {
             LOG.info("User is trying to login the system");
             return userService.loginUser(email, password);
@@ -115,7 +120,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/verification")
-    public ResponseEntity<Object> AccountVerification(@RequestHeader("Authorization") String token, @RequestHeader Long id, @RequestHeader String emailToken, @RequestHeader String smsToken) {
+    public ResponseEntity<Object> AccountVerification(@RequestHeader("Authorization") String token, @RequestHeader Long id, @RequestHeader String emailToken, @RequestHeader String smsToken) throws ParseException {
         if (authorization(token)) {
             LOG.info("Verifying account by token");
             return userService.AccountVerification(id, emailToken, smsToken);
@@ -131,7 +136,7 @@ public class UserController {
      * @return
      */
     @PutMapping ("/resendVerificationToken")
-    public ResponseEntity<Object> resendVerificationToken(@RequestHeader("Authorization") String token,@RequestHeader  String email ){
+    public ResponseEntity<Object> resendVerificationToken(@RequestHeader("Authorization") String token,@RequestHeader  String email ) throws ParseException {
         if (authorization(token)) {
             LOG.info("Resending the verification tokens");
             return userService.resendVerificationToken(email);
@@ -146,7 +151,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/list")
-    public ResponseEntity<Object> listOfUsers(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfUsers(@RequestHeader("Authorization") String token) throws ParseException {
         if (!authorization(token)) {
             LOG.info("Unauthorized user trying to access the database");
             return UnAuthorizeUser();
@@ -162,7 +167,7 @@ public class UserController {
      * @return
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getUserByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+    public ResponseEntity<Object> getUserByID(@RequestHeader("Authorization") String token, @PathVariable Long id) throws ParseException {
         if (authorization(token)) {
             return userService.getUser(id); //It will return the Response
         } else {
@@ -178,7 +183,7 @@ public class UserController {
      * @return
      */
     @PutMapping("/update")
-    public ResponseEntity<Object> UpdateUser(@RequestHeader("Authorization") String token, @RequestBody User user) {
+    public ResponseEntity<Object> UpdateUser(@RequestHeader("Authorization") String token, @RequestBody User user) throws ParseException {
         if (authorization(token)) {
             LOG.info("Updating the user");
             return userService.updateUser(user);
@@ -195,14 +200,14 @@ public class UserController {
      * @return
      */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Object> DeleteUser(@PathVariable Long id, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> DeleteUser(@PathVariable Long id, @RequestHeader("Authorization") String token) throws ParseException {
 
         if (authorization(token)) {
             try{
                 return userService.deleteUser(id);
             }catch (Exception exception){
                 LOG.info("UnAuthorized User was trying to access the database");
-                return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+                return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception"+exception.getMessage(),null);
             }
         }
         else{

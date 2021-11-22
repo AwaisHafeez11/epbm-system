@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.sql.Date;
+import java.text.ParseException;
 
 @EnableSwagger2
 @RestController
@@ -36,7 +37,7 @@ public class FinancialController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<Object> listOfFinancialForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfFinancialForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             return financialService.listAllFinancialFroms();
         } else {
@@ -61,7 +62,7 @@ public class FinancialController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getFinancialFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+    public ResponseEntity<Object> getFinancialFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) throws ParseException {
         if (authorization(token)) {
             return financialService.getFinancialForm(id); //It will return the Response
         } else {
@@ -71,7 +72,7 @@ public class FinancialController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<Object> UpdateFinancialForm(@RequestHeader("Authorization") String token, @RequestBody FinancialForm financialForm) {
+    public ResponseEntity<Object> UpdateFinancialForm(@RequestHeader("Authorization") String token, @RequestBody FinancialForm financialForm) throws ParseException {
         if (authorization(token)) {
             return financialService.updateFinancialForm(financialForm);
         } else {
@@ -174,7 +175,7 @@ public class FinancialController {
      * @return
      */
     @GetMapping("/list/Inactive")
-    public ResponseEntity<Object> listOfInActiveFinancialForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfInActiveFinancialForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             LOG.info("Listing all the financial forms that are Inactive");
             return financialService.listAllInactive();
@@ -189,7 +190,7 @@ public class FinancialController {
      * @return
      */
     @GetMapping("/list/active")
-    public ResponseEntity<Object> listOfActiveFinancialForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfActiveFinancialForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             LOG.info("Listing all the financial that are active");
             return financialService.listAllActive();

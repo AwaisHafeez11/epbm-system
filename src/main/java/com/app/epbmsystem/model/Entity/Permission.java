@@ -3,11 +3,12 @@ package com.app.epbmsystem.model.Entity;
 import lombok.Data;
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
+import java.sql.Date;
+
 
 @Data
 @Entity
-@Table(name = "role", indexes = {
+@Table(name = "permission", indexes = {
         @Index(name = "created_date_index", columnList = "createdDate"),
         @Index(name = "active_index", columnList = "active")
 })

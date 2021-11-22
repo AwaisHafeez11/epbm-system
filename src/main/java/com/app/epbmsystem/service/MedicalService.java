@@ -5,6 +5,7 @@ import com.app.epbmsystem.model.Forms.EducationalForm;
 import com.app.epbmsystem.model.Forms.FinancialForm;
 import com.app.epbmsystem.model.Forms.MedicalForm;
 import com.app.epbmsystem.repository.MedicalRepository;
+import com.app.epbmsystem.util.ResponseHandler;
 import com.app.epbmsystem.util.SqlDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,23 +36,24 @@ public class MedicalService {
      *this method list of all medical forms
      * @return
      */
-    public ResponseEntity<Object> listAllMedicalFroms(){   // List of all Medical applications
+    public ResponseEntity<Object> listAllMedicalFroms() throws ParseException {   // List of all Medical applications
         try {
             List<MedicalForm> medicalForms= medicalRepository.findAll();
             if (medicalForms.isEmpty())
             {
                 LOG.info("there is no list of medical forms exists till now");
-                return new ResponseEntity<>("No MedicalForm exists in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"No MedicalForm exists in the database",null);
             }
             else
             {
                 LOG.info("Returning list of medicalForms to the controller from service");
-                return new ResponseEntity<>(medicalForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of medical forms",medicalForms);
             }
         }
         catch (Exception e){
             LOG.info("listAllMedicalFroms Throws exception Internal server Error");
-             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
+
         }
     }
 
@@ -60,7 +62,7 @@ public class MedicalService {
      * @param medicalForm
      * @return
      */
-    public ResponseEntity<Object> saveMedicalForm(MedicalForm medicalForm) {
+    public ResponseEntity<Object> saveMedicalForm(MedicalForm medicalForm) throws ParseException {
         try
         {
             medicalForm.setCreatedDate(SqlDate.getDateInSqlFormat());
@@ -68,12 +70,12 @@ public class MedicalService {
             medicalForm.setActive(true);
             medicalForm.setApplicationStatus("In review");
                         medicalRepository.save(medicalForm);
-            return new ResponseEntity<>("Medical Application Added, Thank you for adding   ",HttpStatus.OK);
-        } catch (ParseException e) {
-            LOG.info("An exception throws by saveMedicalForm in the service method  ");
-            e.printStackTrace();
+            return ResponseHandler.generateResponse(HttpStatus.OK,false,"Medical Application Added",null);
         }
-       return new ResponseEntity<>("",HttpStatus.OK);
+        catch (ParseException e) {
+            LOG.info("An exception throws by saveMedicalForm in the service method  ");
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
+        }
     }
 
     /**
@@ -81,7 +83,7 @@ public class MedicalService {
      * @param medicalForm
      * @return
      */
-    public ResponseEntity<Object> updateMedicalForm(MedicalForm medicalForm){                  // Update user
+    public ResponseEntity<Object> updateMedicalForm(MedicalForm medicalForm) throws ParseException {                  // Update user
         try{
             Long id = medicalForm.getId();
 
@@ -90,16 +92,15 @@ public class MedicalService {
                 medicalForm.setUpdatedDate(SqlDate.getDateInSqlFormat());
                 medicalRepository.save(medicalForm);
                 LOG.info("Medical Application updated");
-                return new ResponseEntity<>("medicalForm updated thank you", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"medicalForm updated thank you",null);
             } else {
-
-                return new ResponseEntity<>("medicalForm not exist", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data you are trying to update doesn't exists",null);
             }
         }
         catch (Exception e)
         {
             LOG.info("An exception throws by the method(updateMedicalForm) in Medical service ");
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception"+e.getMessage(),null);
         }
     }
 
@@ -108,20 +109,21 @@ public class MedicalService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> deleteMedicalForm(Long id){
+    public ResponseEntity<Object> deleteMedicalForm(Long id) throws ParseException {
         try{
             Optional<MedicalForm> existingForm= medicalRepository.findById(id);
             if (existingForm.isPresent()) {
                 existingForm.get().setActive(false);
                 medicalRepository.save(existingForm.get());
-                return new ResponseEntity<>(" MedicalForm has been Deleted/Inactive", HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Inactivated form for the id"+id,null);
             } else {
-                return new ResponseEntity<>("MedicalForm Not exists Please enter Valid ID", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Not Found any data for the id: "+id,null);
             }
         }
         catch (Exception e){
             LOG.info("Exception: " + e.getMessage());
-            return new ResponseEntity<>("Exception ", HttpStatus.BAD_REQUEST);}
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
+           }
     }
 
     /**
@@ -129,24 +131,24 @@ public class MedicalService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> getMedicalForm(Long id){
+    public ResponseEntity<Object> getMedicalForm(Long id) throws ParseException {
         try{
             Optional<MedicalForm> medicalForm = medicalRepository.findById(id);
             if (medicalForm.isPresent())
             {
                 LOG.info("medical form exist for this: "+ id);
-                return new ResponseEntity<>(medicalForm, HttpStatus.FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"medical form exist for this:",medicalForm);
             }
             else
             {
                 LOG.info("there is no medical form exist for this: "+ id);
-                return new ResponseEntity<>(medicalForm, HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not exists by id: "+id,null);
             }
         }
         catch (Exception exception)
             {
                 LOG.info("An exception throws by getMedicalForm in MedicalService class ");
-                return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
+                return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+exception.getMessage(),null);}
     }
 
     /**
@@ -154,20 +156,19 @@ public class MedicalService {
      * @param date
      * @return
      */
-    public ResponseEntity<Object> searchByDate(Date date) {
+    public ResponseEntity<Object> searchByDate(Date date) throws ParseException {
         try {
             LOG.info("Checking Weather data is present or not");
             List<MedicalForm> existingForms = medicalRepository.findByCreatedDate(date);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found for the entered date in database",null);
             } else {
                 LOG.info("List of educational application: Sorted by date ");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of forms: Sorted by date",existingForms);
             }
         } catch (Exception e) {
             LOG.info("error in searchbydate in class MedicalService :"+e.getMessage() + e.getCause());
-
-            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -176,20 +177,19 @@ public class MedicalService {
      * @param date
      * @return
      */
-    public ResponseEntity<Object> searchByStartDate(Date date) {
+    public ResponseEntity<Object> searchByStartDate(Date date) throws ParseException {
         try {
             LOG.info("Checking Weather data is present or not");
             List<MedicalForm> existingForms = medicalRepository.findByStartDate(date);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found for the entered date in database",null);
             } else {
-                LOG.info("List of Medical application: Sorted by date ");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                LOG.info("List of Medical application: Sorted start by date ");
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of Medical application: Sorted by start date",existingForms);
             }
         } catch (Exception e) {
             LOG.info("error in searchbydate in class eMedicallService :"+e.getMessage() + e.getCause());
-
-            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -199,19 +199,19 @@ public class MedicalService {
      * @param endDate
      * @return
      */
-    public ResponseEntity<Object> searchByStartDateAndEndDate(Date startDate,Date endDate) {
+    public ResponseEntity<Object> searchByStartDateAndEndDate(Date startDate,Date endDate) throws ParseException {
         try {
             LOG.info("Checking Weather data is present or not between two dates");
             List<MedicalForm> existingForms =medicalRepository.findByCreatedDateBetweenOrderByUpdatedDateAsc(startDate,endDate);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("Data not found for the entered date in database.", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Data not found for the entered date in database",null);
             } else {
                 LOG.info("List of Medical application: Sorted by date ");
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of forms: Sorted by start to end date",existingForms);
             }
         } catch (Exception e) {
             LOG.info("error in searchbydate in class MedicallService :"+e.getMessage() + e.getCause());
-            return new ResponseEntity<Object>("An error occured ", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Excepption: "+e.getMessage(),null);
         }
     }
 
@@ -219,17 +219,17 @@ public class MedicalService {
      * display list of all active Medical applications
      * @return
      */
-    public ResponseEntity<Object> listAllActive() {
+    public ResponseEntity<Object> listAllActive() throws ParseException {
         try {
             List<MedicalForm> existingForms = medicalRepository.findAllByActive(true);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("There are no Medical application in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no Medical application in the database",null);
             } else {
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of active forms",existingForms);
             }
         } catch (Exception e) {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -237,17 +237,18 @@ public class MedicalService {
      * display list of all inactive Medical applications
      * @return
      */
-    public ResponseEntity<Object> listAllInactive(){
+    public ResponseEntity<Object> listAllInactive() throws ParseException {
         try {
             List<MedicalForm> existingForms = medicalRepository.findAllByActive(false);
             if (existingForms.isEmpty()) {
-                return new ResponseEntity<>("There are no medical applications in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no medical applications in the database",null);
+
             } else {
-                return new ResponseEntity<>(existingForms, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of Inactive forms",existingForms);
             }
         } catch (Exception e) {
             LOG.info("Exception throws by listAllInactive medical applications at medicalService  "+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
 
 
@@ -259,19 +260,20 @@ public class MedicalService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> ListOfUserMedicalForms(Long id){
+    public ResponseEntity<Object> ListOfUserMedicalForms(Long id) throws ParseException {
         try {
             List<MedicalForm> existingForm = medicalRepository.findMedicalFormsByUserId(id);
 
             if (existingForm.isEmpty()) {
-                return new ResponseEntity<>("There are no application forms for the entered user ID", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no application forms for the entered user ID",null);
             } else {
-                return new ResponseEntity<>(existingForm, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of forms ",existingForm);
             }
         }
         catch (Exception e)
         {
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+            LOG.info("Exception: "+e.getMessage()+"   Cause"+e.getCause());
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -280,25 +282,24 @@ public class MedicalService {
      * @param applicationStatus
      * @return
      */
-    public ResponseEntity<Object> ListOfMedicalFormsByApplicationStatus(String applicationStatus)
-    {
+    public ResponseEntity<Object> ListOfMedicalFormsByApplicationStatus(String applicationStatus) throws ParseException {
         try{
             List<MedicalForm> existingForms= medicalRepository.findMedicalFormsByApplicationStatus(applicationStatus);
             if (existingForms.isEmpty())
             {
                 LOG.info("There is no In review forms exists",HttpStatus.NO_CONTENT);
-                return new ResponseEntity<>("There is no In review forms exists",HttpStatus.NO_CONTENT);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There is no In review forms exists",null);
             }
             else
             {
                 LOG.info("Status: In review Forms exists");
-                return new ResponseEntity<>("Status: In review forms exists" + existingForms,HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Status: In review forms exists",existingForms);
             }
         }
         catch (Exception e)
         {
             LOG.info("Exception throws by method(ListOfMedicalFormsByApplicationStatus) "+e.getMessage());
-            return new ResponseEntity<>("Exception"+e.getMessage(),HttpStatus.BAD_REQUEST);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+ e.getCause(),null);
         }
     }
 }

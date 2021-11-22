@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.text.ParseException;
+
 @EnableSwagger2
 @RestController
 @RequestMapping("/disease")
@@ -48,7 +50,7 @@ public class DiseaseController {
      * @return
      */
     @GetMapping("/list")
-    public ResponseEntity<Object> listOfDisease(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfDisease(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             return diseaseService.listAllDisease();
         } else {
@@ -85,7 +87,7 @@ public class DiseaseController {
      * @return
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getDiseaseByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+    public ResponseEntity<Object> getDiseaseByID(@RequestHeader("Authorization") String token, @PathVariable Long id) throws ParseException {
         if (authorization(token)) {
             return diseaseService.getDisease(id);
         } else {
@@ -101,7 +103,7 @@ public class DiseaseController {
      * @return
      */
     @PutMapping("/update")
-    public ResponseEntity<Object> UpdateDisease(@RequestHeader("Authorization") String token, @RequestBody Disease disease) {
+    public ResponseEntity<Object> UpdateDisease(@RequestHeader("Authorization") String token, @RequestBody Disease disease) throws ParseException {
         if (authorization(token)) {
             return diseaseService.updateDisease(disease);
         } else {
@@ -159,7 +161,7 @@ public class DiseaseController {
      * @return
      */
     @GetMapping("/list/Inactive")
-    public ResponseEntity<Object> listOfInActiveUsers(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfInActiveUsers(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             LOG.info("Listing all the disease that are Inactive");
             return diseaseService.listAllInactiveDiseases();
@@ -175,7 +177,7 @@ public class DiseaseController {
      * @return
      */
     @GetMapping("/list/active")
-    public ResponseEntity<Object> listOfActiveUsers(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfActiveUsers(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             LOG.info("Listing all the disease that are active");
             return diseaseService.listAllActivediseases();

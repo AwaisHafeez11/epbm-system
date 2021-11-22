@@ -5,6 +5,7 @@ import com.app.epbmsystem.model.Entity.Permission;
 import com.app.epbmsystem.model.Entity.Role;
 import com.app.epbmsystem.repository.RoleRepository;
 import com.app.epbmsystem.util.DateTime;
+import com.app.epbmsystem.util.ResponseHandler;
 import com.app.epbmsystem.util.SqlDate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.xml.ws.Response;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +39,7 @@ public class RoleService {
      * @param role
      * @return
      */
-    public ResponseEntity<Object> saveRole(Role role){
+    public ResponseEntity<Object> saveRole(Role role) throws ParseException {
         try
         {
             Optional<Permission> existingRole= roleRepository.findByName(role.getName());
@@ -44,11 +47,12 @@ public class RoleService {
              {
                  if(existingRole.get().isActive())
                  {
-                     return new ResponseEntity<>("Role Already exists ",HttpStatus.BAD_REQUEST);
+
+                     return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"Role Already exists ",null);
                  }
                  else
                  {
-                     return new ResponseEntity<>("please Update existing roles ",HttpStatus.OK);
+                     return ResponseHandler.generateResponse(HttpStatus.OK,false,"please Update existing roles ",null);
                  }
              }
             else
@@ -57,13 +61,13 @@ public class RoleService {
                 role.setUpdatedDate(SqlDate.getDateInSqlFormat());
                 role.setActive(true);
                 roleRepository.save(role);
-                return new ResponseEntity<>("Role Added",HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"Role Added",role);
             }
         }
         catch (Exception e)
         {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true," Exception: "+e.getMessage(),null);
         }
 
     }
@@ -72,20 +76,21 @@ public class RoleService {
      * List of All active and inactive roles
      * @return
      */
-    public ResponseEntity<Object> listAllRoles(){
+    public ResponseEntity<Object> listAllRoles() throws ParseException {
         try {
             List<Role> RoleList= roleRepository.findAll();
             if (RoleList.isEmpty())
             {
-                return new ResponseEntity<>("No Role exists in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"No Role exists in the database",null);
             }
             else
             {
-                return new ResponseEntity<>(RoleList, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of Roles",RoleList);
             }
         }
         catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,false,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -94,7 +99,7 @@ public class RoleService {
      * @param role
      * @return
      */
-    public ResponseEntity<Object> updateRole(Role role){
+    public ResponseEntity<Object> updateRole(Role role) throws ParseException {
         try{
             Long id = role.getId();
             Optional<Role> existingRole= roleRepository.findById(id);
@@ -104,21 +109,21 @@ public class RoleService {
                 {
                     existingRole.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
                     roleRepository.save(existingRole.get());
-                    return new ResponseEntity<>("Role updated thank you", HttpStatus.OK);
+                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"Role updated thank you",null);
                 }
                 else
                 {
-                    return new ResponseEntity<>("Please Add role before update it. Thank you",HttpStatus.BAD_REQUEST);
+                    return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"",null);
                 }
             }
             else
             {
-                return new ResponseEntity<>("Role not exist", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Role not exist",null);
             }
         }
         catch (Exception e)
         {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -127,7 +132,7 @@ public class RoleService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> deleteRole(Long id){                   //Delete Role
+    public ResponseEntity<Object> deleteRole(Long id) throws ParseException {                   //Delete Role
         try {
             Optional<Role> existingRole= roleRepository.findById(id);
             if (existingRole.isPresent())
@@ -137,22 +142,22 @@ public class RoleService {
                     existingRole.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
                     existingRole.get().setActive(false);
                     roleRepository.save(existingRole.get());
-                    return new ResponseEntity<>("Role Inactive/Deleted into the DB",HttpStatus.OK);
+                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"",null);
                 }
                 else
                 {
-                    return new ResponseEntity<>(" Role already deleted", HttpStatus.BAD_REQUEST);
+                    return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"Role already deleted",null);
                 }
             }
             else
             {
-                return new ResponseEntity<>("Role Not exists Please enter Valid ID", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"",null);
             }
         }
         catch (Exception e)
         {
             LOG.info("Exception: " + e.getMessage());
-            return new ResponseEntity<>("Role deleted", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"Role deleted"+e.getMessage(),null);
         }
     }
 
@@ -161,42 +166,45 @@ public class RoleService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> getRole(Long id){
+    public ResponseEntity<Object> getRole(Long id) throws ParseException {
         try{
             Optional<Role> role = roleRepository.findById(id);
             if (role.isPresent())
             {
-                return new ResponseEntity<>(role, HttpStatus.FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.FOUND,false,"",role);
             }
             else
             {
-                return new ResponseEntity<>("Role Not exists Please enter Valid ID", HttpStatus.NOT_FOUND);
+
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"Role Not exists Please enter Valid ID",null);
             }
         }
-        catch (Exception exception)
-        {return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);}
-    }
+        catch (Exception exception) {
+
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, true, "Exception "+exception.getMessage(), null);
+        }
+        }
 
     /**
      * this methods displays list of all active roles
      * @return
      */
-    public ResponseEntity<Object> listOfActiveRoles() {
+    public ResponseEntity<Object> listOfActiveRoles() throws ParseException {
         try
         {
             List<Role> existingRoles = roleRepository.findAllByActive(true);
             if (existingRoles.isEmpty()) {
-                return new ResponseEntity<>("There are no active Category in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no active Category in the database",null);
             }
             else
             {
-                return new ResponseEntity<>(existingRoles, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of Active Roles",existingRoles);
             }
         }
         catch (Exception e)
         {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }
 
@@ -204,22 +212,22 @@ public class RoleService {
      * this method displays list of all inactive roles
      * @return
      */
-    public ResponseEntity<Object> listAllInactiveRoles() {
+    public ResponseEntity<Object> listAllInactiveRoles() throws ParseException {
         try {
             List<Role> existingRoles = roleRepository.findAllByActive(false);
             if (existingRoles.isEmpty())
             {
-                return new ResponseEntity<>("There are no Inactive Roles in the database", HttpStatus.NOT_FOUND);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no Inactive Roles in the database",null);
             }
             else
             {
-                return new ResponseEntity<>(existingRoles, HttpStatus.OK);
+                return ResponseHandler.generateResponse(HttpStatus.OK,false,"List of inactive Roles",existingRoles);
             }
         }
         catch (Exception e)
         {
             LOG.info("Exception"+ e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception"+e.getMessage(),null);
         }
     }
 

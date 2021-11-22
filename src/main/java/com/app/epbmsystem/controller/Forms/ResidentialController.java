@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.sql.Date;
+import java.text.ParseException;
 
 @EnableSwagger2
 @RestController
@@ -49,7 +50,7 @@ public class ResidentialController {
      * @return
      */
     @GetMapping("/list")
-    public ResponseEntity<Object> listOfResidentialForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfResidentialForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             return residentialService.listAllResidentialFroms();
         } else {
@@ -86,7 +87,7 @@ public class ResidentialController {
      * @return
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getResidentialFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+    public ResponseEntity<Object> getResidentialFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) throws ParseException {
         if (authorization(token)) {
             return residentialService.getResidentialForm(id);
         } else {
@@ -102,7 +103,7 @@ public class ResidentialController {
      * @return
      */
     @PutMapping("/update")
-    public ResponseEntity<Object> UpdateResidentialForm(@RequestHeader("Authorization") String token, @RequestBody ResidentialForm residentialForm) {
+    public ResponseEntity<Object> UpdateResidentialForm(@RequestHeader("Authorization") String token, @RequestBody ResidentialForm residentialForm) throws ParseException {
         if (authorization(token)) {
             return residentialService.updateResidentialForm(residentialForm);
         } else {
@@ -155,14 +156,13 @@ public class ResidentialController {
         }
     }
 
-
     /**
      * List of all Inactive ResidentialForms display
      * @param token
      * @return
      */
     @GetMapping("/list/Inactive")
-    public ResponseEntity<Object> listOfInActiveResidentialForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfInActiveResidentialForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             LOG.info("Listing all the ResidentialForms that are Inactive");
             return residentialService.listAllInactive();
@@ -178,7 +178,7 @@ public class ResidentialController {
      * @return
      */
     @GetMapping("/list/active")
-    public ResponseEntity<Object> listOfActiveResidentialForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfActiveResidentialForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             LOG.info("Listing all the Residential forms that are active");
             return residentialService.listAllActive();
