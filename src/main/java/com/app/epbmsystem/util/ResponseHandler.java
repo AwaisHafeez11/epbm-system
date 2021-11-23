@@ -15,7 +15,7 @@ public class ResponseHandler {
         try {
             map.put("timestamp", new Date(SqlDate.getDateInSqlFormat().getTime()));
             map.put("status", status.value());
-            map.put("isSuccess", error);
+            map.put("error", error);
             map.put("message", message);
             map.put("data", responseObject);
 
@@ -24,7 +24,7 @@ public class ResponseHandler {
             map.clear();
             map.put("timestamp", new Date(SqlDate.getDateInSqlFormat().getTime()));
             map.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            map.put("isSuccess",false);
+            map.put("error",false);
             map.put("message", e.getMessage());
             map.put("data", null);
             return new ResponseEntity<Object>(map,status);

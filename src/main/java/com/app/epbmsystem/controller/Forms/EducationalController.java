@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.sql.Date;
+import java.text.ParseException;
 import java.util.List;
 
 
@@ -54,7 +55,7 @@ public class EducationalController {
      * @return
      */
     @GetMapping("/list")
-    public ResponseEntity<Object> listOfEducationalForms(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Object> listOfEducationalForms(@RequestHeader("Authorization") String token) throws ParseException {
         if (authorization(token)) {
             return educationalService.listAllEducationalFroms();
         } else {
@@ -91,7 +92,7 @@ public class EducationalController {
      * @return
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getEducationalFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+    public ResponseEntity<Object> getEducationalFormByID(@RequestHeader("Authorization") String token, @PathVariable Long id) throws ParseException {
         if (authorization(token)) {
             return educationalService.getEducationalForm(id); //It will return the Response
         } else {
@@ -107,7 +108,7 @@ public class EducationalController {
      * @return
      */
     @PutMapping("/update")
-    public ResponseEntity<Object> UpdateEducationalForm(@RequestHeader("Authorization") String token, @RequestBody EducationalForm educationalForm) {
+    public ResponseEntity<Object> UpdateEducationalForm(@RequestHeader("Authorization") String token, @RequestBody EducationalForm educationalForm) throws ParseException {
         if (authorization(token)) {
             return educationalService.updateEducationalForm(educationalForm);
         } else {

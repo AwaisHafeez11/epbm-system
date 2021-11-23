@@ -76,6 +76,7 @@ public class CategoryService {
             } else {
                 category.setCreatedDate(DateTime.getDateTime());
                 category.setUpdatedDate(DateTime.getDateTime());
+                category.setActive(true);
                 categoryRepository.save(category);
                 return ResponseHandler.generateResponse(HttpStatus.OK, false, "Category added", null);
             }

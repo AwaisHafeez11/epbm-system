@@ -1,5 +1,6 @@
 package com.app.epbmsystem.service;
 
+import com.app.epbmsystem.model.Forms.EducationalForm;
 import com.app.epbmsystem.repository.UserRepository;
 import com.app.epbmsystem.model.Entity.User;
 import com.app.epbmsystem.util.*;
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -292,6 +296,23 @@ public class UserService {
 
         }
     }
+
+    public ResponseEntity<Object> ListOFUserEducationalForms(long uid,String status) throws ParseException {
+        Optional<User> users= userRepository.findById(uid);
+                if(users.isPresent()){
+            List<EducationalForm> educationalForms = users.get().getEducationalForms();
+
+            List<EducationalForm> educationalFormStream = educationalForms.stream().filter(educationalForm -> educationalForm.getApplicationStatus().equals(status)).collect(Collectors.toList());
+            return ResponseHandler.generateResponse(HttpStatus.OK,false,"Listing of educational form of user ID"+uid,educationalFormStream);
+        }
+        else
+        {
+            return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"No applications found for the user Id: "+uid,null);
+        }
+    }
+
+
+
 
 //    @Override
 //    public UserDetails loadUserByUsername(String firstName) throws UsernameNotFoundException {

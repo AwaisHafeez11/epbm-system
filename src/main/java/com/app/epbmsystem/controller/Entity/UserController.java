@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.text.ParseException;
+import java.util.Optional;
 
 @EnableSwagger2
 @RestController
@@ -215,5 +216,15 @@ public class UserController {
         }
     }
 
-
+    @GetMapping("/UserEducationalForms")
+    public ResponseEntity<Object> UserEducationalForms(@RequestHeader("id") Long id,@RequestHeader("status") String status ,@RequestHeader("Authorization")String token) throws ParseException {
+        if (authorization(token))
+        {
+          return userService.ListOFUserEducationalForms(id,status);
+        }
+        else
+        {
+            return UnAuthorizeUser();
+        }
+    }
 }

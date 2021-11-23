@@ -52,6 +52,7 @@ public class RoleService {
                  }
                  else
                  {
+
                      return ResponseHandler.generateResponse(HttpStatus.OK,false,"please Update existing roles ",null);
                  }
              }
@@ -69,7 +70,6 @@ public class RoleService {
             LOG.info("Exception"+ e.getMessage());
             return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true," Exception: "+e.getMessage(),null);
         }
-
     }
 
     /**
@@ -132,7 +132,7 @@ public class RoleService {
      * @param id
      * @return
      */
-    public ResponseEntity<Object> deleteRole(Long id) throws ParseException {                   //Delete Role
+    public ResponseEntity<Object> deleteRole(Long id) throws ParseException {
         try {
             Optional<Role> existingRole= roleRepository.findById(id);
             if (existingRole.isPresent())
@@ -142,7 +142,7 @@ public class RoleService {
                     existingRole.get().setUpdatedDate(SqlDate.getDateInSqlFormat());
                     existingRole.get().setActive(false);
                     roleRepository.save(existingRole.get());
-                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"",null);
+                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"Role Added Successfully",null);
                 }
                 else
                 {
@@ -194,7 +194,7 @@ public class RoleService {
         {
             List<Role> existingRoles = roleRepository.findAllByActive(true);
             if (existingRoles.isEmpty()) {
-                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no active Category in the database",null);
+                return ResponseHandler.generateResponse(HttpStatus.NOT_FOUND,true,"There are no active Roles in the database",null);
             }
             else
             {

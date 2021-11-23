@@ -80,20 +80,20 @@ public class PermissionService {
                     permission.setActive(true);
                     permission.setUpdatedDate(SqlDate.getDateInSqlFormat());
                     permissionRepository.save(permission);
-                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"",null);
+                    return ResponseHandler.generateResponse(HttpStatus.OK,false,"Permission added",null);
                 }
             }
             else
             {
                 permission.setCreatedDate(SqlDate.getDateInSqlFormat());
                 permission.setUpdatedDate(SqlDate.getDateInSqlFormat());
+                permission.setActive(true);
                 permissionRepository.save(permission);
                 return ResponseHandler.generateResponse(HttpStatus.OK,false,"permission added",permission);
             }
-
         }
         catch (Exception e) {
-            LOG.info("Exception: "+e.getMessage());
+            LOG.info("Exception: "+e.getMessage()+"    Cause:"+e.getCause());
             return ResponseHandler.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,true,"Exception: "+e.getMessage(),null);
         }
     }

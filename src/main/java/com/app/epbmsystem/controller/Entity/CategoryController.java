@@ -33,9 +33,9 @@ public class CategoryController {
         return CategoryController.token.equals(token);
     }
 
-    public ResponseEntity<Object> UnAuthorizeUser() {
+    public ResponseEntity<Object> UnAuthorizeUser() throws ParseException {
         LOG.info("Unauthorized user is trying to get access");
-        return new ResponseEntity<>("Kindly do the authorization first", HttpStatus.UNAUTHORIZED);
+        return ResponseHandler.generateResponse(HttpStatus.UNAUTHORIZED,true,"UNAUTHORIZED, Kindly do the authorization first ",null);
     }
 
     /**
@@ -176,10 +176,9 @@ public class CategoryController {
      * @throws ParseException
      */
     @GetMapping("/active")
-    public ResponseEntity<Object> ListOfActiveCategories(@RequestHeader("Authorizationn")String token) throws ParseException {
+    public ResponseEntity<Object> ListOfActiveCategories(@RequestHeader("Authorization")String token) throws ParseException {
         if (authorization(token))
         {
-
                 return categoryService.listAllActiveCategories();
         }
         else
@@ -195,7 +194,7 @@ public class CategoryController {
      * @throws ParseException
      */
     @GetMapping("/inactive")
-    public ResponseEntity<Object> ListOfInactiveCategories(@RequestHeader("Authorizationn")String token) throws ParseException {
+    public ResponseEntity<Object> ListOfInactiveCategories(@RequestHeader("Authorization")String token) throws ParseException {
         if (authorization(token))
         {
 
