@@ -4,29 +4,35 @@ import com.app.epbmsystem.model.Forms.EducationalForm;
 import com.app.epbmsystem.repository.UserRepository;
 import com.app.epbmsystem.model.Entity.User;
 import com.app.epbmsystem.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.core.userdetails.UserDetails;
 //import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.validation.constraints.Null;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private static final Logger LOG = LogManager.getLogger(UserService.class);
     private Date tokenExpireTime = null;
 
+    @Autowired
+    private PasswordEncoder bcryptEncoder;
     final UserRepository userRepository;
     final EmailNotification emailNotification;
     final SmsNotification smsNotification;
@@ -111,7 +117,9 @@ public class UserService {
                     return ResponseHandler.generateResponse(HttpStatus.BAD_REQUEST,true,"User already present",user);
                 } else {
                     existingUser.get().setActive(true);
+                    existingUser.get().setPassword(bcryptEncoder.encode(user.getPassword()));
                     userRepository.save(existingUser.get());
+
                     return ResponseHandler.generateResponse(HttpStatus.OK,false,"Inactive User already exists. User activated successfully. Enjoy Bait ul Mall Services",existingUser);
                 }
             } else {
@@ -126,6 +134,7 @@ public class UserService {
                 tokenExpireTime = DateTime.getExpireTime();
                 user.setActive(false); //the user is active in the start
                 user.setCreatedDate(DateTime.getDateTime());
+                user.setPassword(bcryptEncoder.encode(user.getPassword()));
                 userRepository.save(user);
                 return ResponseHandler.generateResponse(HttpStatus.OK,false,"User is successfully added",user);
             }
@@ -312,15 +321,53 @@ public class UserService {
     }
 
 
+    /**
+     * returns a first name and password of existing authorize user from the database
+     * @param userName
+     * @return
+     * @throws UsernameNotFoundException
+     */
+    @Override
+    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
+        Optional<User> existingUser= userRepository.findUserByUsername(userName);
+        if(existingUser.isPresent())
+        {
+            return new org.springframework.security.core.userdetails.User(existingUser.get().getUsername(),existingUser.get().getPassword(),getAuthority(existingUser.get()));
+        }
+        else
+        throw  new UsernameNotFoundException("User name not found with the name: "+userName);
+    }
 
 
-//    @Override
+    /**
+     * Fetching the roles of a user so that can give him the authorities for the apis
+     * @param user
+     * @return
+     */
+    private Set<SimpleGrantedAuthority> getAuthority(User user) {
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+        user.getRoles().forEach(role -> {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        });
+        return authorities;
+    }
+
+
+
+
+
+
+
+
+    //    @Override
 //    public UserDetails loadUserByUsername(String firstName) throws UsernameNotFoundException {
-//        Optional<User> user = userRepository.findUserByFirstName(firstName);
-//        if (user.isPresent()) {
-//            return new org.springframework.security.core.userdetails.User(user.get().getFirstName(), user.get().getPassword(),new ArrayList<>());
-//        } else {
-//            throw new UsernameNotFoundException("User not found with username: " + firstName);
-//        }
+////        Optional<User> user = userRepository.findUserByFirstName(firstName);
+////        if (user.isPresent()) {
+//            return new User("foo","foo",new ArrayList<>());
+//
+////        } else {
+////            throw new UsernameNotFoundException("User not found with username: " + firstName);
+////        }
 //    }
+
 }
