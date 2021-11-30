@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,6 +24,8 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Long id;
+    @NotBlank(message = "Username is mandatory")
+    private String username;
     private String firstName;
     private String lastname;
     @Column(unique = true)
@@ -73,7 +76,7 @@ public class User implements Serializable {
     /**
      * One user can have multiple roles, and one role can have multiple users
      */
-    @ManyToMany(targetEntity = Role.class,fetch = FetchType.LAZY)
+    @ManyToMany(targetEntity = Role.class,fetch = FetchType.EAGER)
     private List<Role> roles = new ArrayList<>();
 
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -82,5 +85,6 @@ public class User implements Serializable {
      */
     @ManyToOne(targetEntity = Category.class,fetch = FetchType.LAZY)
     private Category category;
+
 
 }
